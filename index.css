@@ -1,0 +1,33 @@
+#canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: black;
+  }
+  
+  .text {
+    position: fixed;
+    white-space: nowrap;
+    font-size: 10vw;
+    line-height: 1em;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    color: rgba(255, 255, 255, 0.8);
+    font-family: 'Comfortaa', 'Noto Sans TC', cursive, sans-serif;
+    text-shadow: rgba(255, 255, 255, 0.2) 0 0 0.1em
+  }
+  .text * {
+    white-space: nowrap;
+  }
+  
+  .text .underline {
+    position: absolute;
+    bottom: calc(0 - calc(1vw + 30px));
+    
+    border-top: rgba(255, 255, 255, 0.5) 1vw solid;
+    height: 30px;
+    left: -10px;
+    right: -10px;
+  }
