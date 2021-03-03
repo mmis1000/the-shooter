@@ -7,6 +7,10 @@ systems.push({
 
       for (let t of getByComponent('collisionSource')) {
         let collideOnThis = false
+        if (e.region !== t.region) {
+          continue;
+        }
+
         if (e.cType === 'block') {
           if (t.cType === 'block') {
             collideOnThis = (

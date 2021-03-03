@@ -89,14 +89,14 @@ function init () {
   }
 }
 
-// run
-
-function start () {
-  requestAnimationFrame(tick)
-}
-
 // setup
 
 function setup(setupCb = (g) => {}) {
   setupCb(globals)
+}
+
+// run
+
+function start () {
+  requestAnimationFrame(tick)
 }
