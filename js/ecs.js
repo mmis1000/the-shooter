@@ -78,6 +78,11 @@ function tick (ms) {
 
   requestAnimationFrame(tick)
 }
+// setup
+
+function setup(setupCb = (g) => {}) {
+  setupCb(globals)
+}
 
 // boot
 
@@ -87,12 +92,6 @@ function init () {
       sys.init(globals)
     }
   }
-}
-
-// setup
-
-function setup(setupCb = (g) => {}) {
-  setupCb(globals)
 }
 
 // run

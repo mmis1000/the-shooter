@@ -1,3 +1,29 @@
+const updatePositions = (g, x, y, down = false) => {
+  g.mouseX = x
+  g.mouseY = y
+  g.clickDown = down || g.clickDown
+
+  for (let region in g.regions) {
+    const { x: localX, y: localY } = globalToLocal(x, y, g.regions[region].top, g.regions[region].left, g.regions[region].scale)
+    if (
+      localX >= 0 && localX < g.regions[region].width &&
+      localY >= 0 && localY < g.regions[region].height
+    ) {
+      g.mouseRegions[region] = {
+        x: localX,
+        y: localY,
+        clickDown: down || (g.mouseRegions[region]?.clickDown ?? false)
+      }
+    } else {
+      g.mouseRegions[region] = {
+        x: -1,
+        y: -1,
+        clickDown: false
+      }
+    }
+  }
+}
+
 systems.push({
   name: 'trackCursor',
   dependsOn: ['regions'],
@@ -12,59 +38,33 @@ systems.push({
        */
     }
 
-    const updatePositions = (x, y, down = false) => {
-      g.mouseX = x
-      g.mouseY = y
-      g.clickDown = down || g.clickDown
-
-      for (let region in g.regions) {
-        const { x: localX, y: localY } = globalToLocal(x, y, g.regions[region].top, g.regions[region].left, g.regions[region].scale)
-        if (
-          localX >= 0 && localX < g.regions[region].width &&
-          localY >= 0 && localY < g.regions[region].height
-        ) {
-          g.mouseRegions[region] = {
-            x: localX,
-            y: localY,
-            clickDown: down || (g.mouseRegions[region]?.clickDown ?? false)
-          }
-        } else {
-          g.mouseRegions[region] = {
-            x: -1,
-            y: -1,
-            clickDown: false
-          }
-        }
-      }
-    }
-
     updatePositions(-1, -1, false)
 
     g.canvas.addEventListener('mousemove', function (e) {
       const rect = g.canvas.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
-      updatePositions(x, y)
+      updatePositions(g, x, y)
     })
     g.canvas.addEventListener('touchmove', function (e) {
       const rect = g.canvas.getBoundingClientRect();
       const t = e.touches[0]
       const x = t.clientX - rect.left;
       const y = t.clientY - rect.top;
-      updatePositions(x, y)
+      updatePositions(g, x, y)
     })
     g.canvas.addEventListener('mousedown', function (e) {
       const rect = g.canvas.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
-      updatePositions(x, y, true)
+      updatePositions(g, x, y, true)
     })
     g.canvas.addEventListener('touchstart', function (e) {
       const rect = g.canvas.getBoundingClientRect();
       const t = e.touches[0]
       const x = t.clientX - rect.left;
       const y = t.clientY - rect.top;
-      updatePositions(x, y, true)
+      updatePositions(g, x, y, true)
     })
   },
   tick(s, g) {

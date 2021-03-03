@@ -1,12 +1,42 @@
 init()
+
 setup((g) => {
   g.regions['stage'] = {
     left: 0,
     top: 0,
-    width: 360,
-    height: 480,
+    width: 720,
+    height: 960,
     scale: 1
   }
+
+  g.mouseRegions['stage'] = {
+    x: 0,
+    y: 0,
+    clickDOwn: false
+  }
+
+  const updateSize = () => {
+    if (
+      g.regions['stage'].height / g.regions['stage'].width
+      > g.regions['window'].height / g.regions['window'].width
+    ) {
+      // game is taller
+      const scale =g.regions['window'].height /  g.regions['stage'].height
+      g.regions['stage'].scale = scale
+      g.regions['stage'].top = 0;
+      g.regions['stage'].left = g.regions['window'].width / 2 - (g.regions['stage'].width * scale) / 2
+    } else {
+      // game is taller
+      const scale =  g.regions['window'].width / g.regions['stage'].width
+      g.regions['stage'].scale = scale
+      g.regions['stage'].left = 0;
+      g.regions['stage'].top = g.regions['window'].height / 2 - (g.regions['stage'].height * scale) / 2
+    }
+  }
+
+  updateSize()
+
+  g.resizeCb = updateSize
 
   function projectileDestroyCb (e, g, s) {
     if (e.x < 0 || e.y < 0 || e.x > g.regions[e.region].width || e.y > g.regions[e.region].height) {
@@ -48,6 +78,7 @@ setup((g) => {
     addComponent(e, 'pos')
     e.x = x + vector.x * distance
     e.y = y + vector.y * distance
+    e.region = 'stage'
     addComponent(e, 'physic')
     e.vx = vector.x * base
     e.vy = vector.y * base
@@ -73,6 +104,7 @@ setup((g) => {
     addComponent(e, 'pos')
     e.x = g.regions[e.region].width / 2
     e.y = g.regions[e.region].height * 0.4
+    e.region = 'stage'
 
     addComponent(e, 'draw')
     e.drawType = 'ball'
@@ -159,6 +191,7 @@ setup((g) => {
     addComponent(e, 'pos')
     e.x = x + vector.x * distance
     e.y = y + vector.y * distance
+    e.region = 'stage'
     addComponent(e, 'physic')
     e.vx = vector.x * base
     e.vy = vector.y * base
@@ -261,6 +294,7 @@ setup((g) => {
     addComponent(e, 'pos')
     e.x = g.regions[e.region].width / 2 + x
     e.y = 0
+    e.region = 'stage'
 
     addComponent(e, 'draw')
     e.drawType = 'ball'
@@ -305,6 +339,7 @@ setup((g) => {
     addComponent(e, 'pos')
     e.x = x
     e.y = y
+    e.region = 'stage'
     addComponent(e, 'physic')
     e.vx = vx
     e.vy = vy
@@ -326,6 +361,7 @@ setup((g) => {
     addComponent(e, 'pos')
     e.x = -9999
     e.y = -9999
+    e.region = 'stage'
 
     addComponent(e, 'draw')
     e.drawType = 'ball'
@@ -375,6 +411,7 @@ setup((g) => {
     const e = g.healthBar = addEntity()
 
     addComponent(e, 'pos')
+    e.region = 'stage'
 
     addComponent(e, 'draw')
     e.drawType = 'block'
@@ -390,6 +427,8 @@ setup((g) => {
       //text
       const e = g.homeScreenText = addEntity()
       addComponent(e, 'pos')
+      e.region = 'stage'
+
       addComponent(e, 'event')
 
       e.cb = function (e, g) {
@@ -413,6 +452,8 @@ setup((g) => {
       // click handler
       const e = g.homeScreenText = addEntity()
       addComponent(e, 'pos')
+      e.region = 'stage'
+
       addComponent(e, 'event')
 
       addComponent(e, 'trackCursor')
@@ -491,4 +532,5 @@ setup((g) => {
   // startGame ()
   spawnHomeScreen ('Click to start')
 })
+
 start()
