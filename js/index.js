@@ -1,7 +1,9 @@
+// @ts-check
 init()
 
 setup((g) => {
-  g.regions['stage_dec'] = g.regions['stage'] = {
+  const regionWindow = g.regions['window']
+  const regionStage = g.regions['stage_dec'] = g.regions['stage'] = {
     left: 0,
     top: 0,
     width: 720,
@@ -17,20 +19,20 @@ setup((g) => {
 
   const updateSize = () => {
     if (
-      g.regions['stage'].height / g.regions['stage'].width
-      > g.regions['window'].height / g.regions['window'].width
+      regionStage.height / regionStage.width
+      > regionWindow.height / regionWindow.width
     ) {
       // game is taller
-      const scale = g.regions['window'].height / g.regions['stage'].height
-      g.regions['stage'].scale = scale
-      g.regions['stage'].top = 0;
-      g.regions['stage'].left = g.regions['window'].width / 2 - (g.regions['stage'].width * scale) / 2
+      const scale = regionWindow.height / regionStage.height
+      regionStage.scale = scale
+      regionStage.top = 0;
+      regionStage.left = regionWindow.width / 2 - (regionStage.width * scale) / 2
     } else {
       // game is taller
-      const scale = g.regions['window'].width / g.regions['stage'].width
-      g.regions['stage'].scale = scale
-      g.regions['stage'].left = 0;
-      g.regions['stage'].top = g.regions['window'].height / 2 - (g.regions['stage'].height * scale) / 2
+      const scale = regionWindow.width / regionStage.width
+      regionStage.scale = scale
+      regionStage.left = 0;
+      regionStage.top = regionWindow.height / 2 - (regionStage.height * scale) / 2
     }
   }
 
@@ -47,24 +49,7 @@ setup((g) => {
     }
   }
 
-  function killPlayer(e, g, s) {
-    if (e.ctCollided && e.ctHitOn._.type === 'player' && !e.ctHitOn._.immune) {
-      clear()
-      spawnHomeScreen('You dead, try again')
-
-      return true
-    } else {
-      return false
-    }
-  }
-
-  // bullet cb
-  function enemyBulletCb(e, g, s) {
-    if (killPlayer(e, g, s)) return
-
-    projectileDestroyCb(e, g, s)
-  }
-
+  // Attacks player
   function project(x, y, arc, distance = 100, base = 100, bulletRadius = 10) {
     const acc = 50
 
@@ -90,9 +75,14 @@ setup((g) => {
     e.radius = bulletRadius
 
     addComponent(e, 'event')
-    e.cb = enemyBulletCb
+    e.cb = projectileDestroyCb
+
+    addComponent(e, 'damage')
+    e.damage_zone = 'player'
+    e.damage = 1
 
     addComponent(e, 'collisionTarget')
+    e.ct_zone = 'player'
     e.cType = 'ball'
     e.cRadius = bulletRadius
   }
@@ -111,50 +101,23 @@ setup((g) => {
     e.radius = 100
 
     addComponent(e, 'collisionTarget')
+    e.ct_zone = 'player'
+
     addComponent(e, 'collisionSource')
+    e.cs_zone = 'enemy'
     e.cType = 'ball'
     e.cRadius = 100
 
-    // boss hp
-    e._.hp = 50
-    e._.hpMax = 50
+    addComponent(e, 'damage')
+    e.damage_zone = 'player'
+    e.damage = 1
 
-    e._.type = 'enemy'
+    addComponent(e, 'health')
+    e.health_zone = 'enemy'
+    e._.hpMax = e.health = 50
 
-    addComponent(e, 'event')
-    e._.interval = 10
-    e._.age = 0
-    e._.ageWake = 40
-
-    e.cb = (e, g, s) => {
-      e.radius = 100 + (Math.cos((e._.age / 10) * Math.PI * 2) + 1) * 5
-
-      e.x = g.regions[e.region].width / 2 + Math.sin(e._.age / 20) * 100
-      e.y = g.regions[e.region].height * 0.4 + Math.cos(e._.age / 20) * 100
-
-      e._.age += 1
-
-      if (e._.age < e._.ageWake) {
-        return
-      }
-
-      if (killPlayer(e, g, s)) return
-
-      if (e._.age % e._.interval === 0) {
-        const count = e._.hp < 25 ? 12 : 8
-        for (let i = 0; i < count; i++) {
-          project(
-            e.x,
-            e.y,
-            Math.PI * 2 / count * (i + e._.age / (120 + Math.PI)),
-            100,
-            e._.hp < 25 ? 150 : 100
-          )
-        }
-      }
-
-
-      if (e._.hp === 0) {
+    e.health_cb = (e, g, s) => {
+      if (e.health <= 0) {
         destroy(e)
         destroy(g.healthBar)
 
@@ -176,8 +139,37 @@ setup((g) => {
       }
     }
 
+    addComponent(e, 'event')
+    e._.interval = 10
+    e._.ageWake = 40
+
+    e.cb = (e, g, s) => {
+      e.radius = 100 + (Math.cos((e.age/ 10) * Math.PI * 2) + 1) * 5
+
+      e.x = g.regions[e.region].width / 2 + Math.sin(e.age / 20) * 100
+      e.y = g.regions[e.region].height * 0.4 + Math.cos(e.age / 20) * 100
+
+      if (e.age < e._.ageWake) {
+        return
+      }
+
+      if (e.age % e._.interval === 0) {
+        const count = e.health < 25 ? 12 : 8
+        for (let i = 0; i < count; i++) {
+          project(
+            e.x,
+            e.y,
+            Math.PI * 2 / count * (i + e.health / (120 + Math.PI)),
+            100,
+            e.health < 25 ? 150 : 100
+          )
+        }
+      }
+    }
+
   }
 
+  // Attacks player
   function project2(x, y, arc, distance = 100, base = 100, bulletRadius = 10) {
     const acc = 0
 
@@ -192,6 +184,7 @@ setup((g) => {
     e.x = x + vector.x * distance
     e.y = y + vector.y * distance
     e.region = 'stage'
+
     addComponent(e, 'physic')
     e.vx = vector.x * base
     e.vy = vector.y * base
@@ -203,25 +196,28 @@ setup((g) => {
     e.radius = bulletRadius
 
     addComponent(e, 'event')
-    e.cb = enemyBulletCb
+    e.cb = projectileDestroyCb
+
+    addComponent(e, 'damage')
+    e.damage_zone = 'player'
+    e.damage = 1
 
     addComponent(e, 'collisionTarget')
+    e.ct_zone = 'player'
     e.cType = 'ball'
     e.cRadius = bulletRadius
   }
 
   function straightBulletCb(e, g, s) {
-    e.y = e._.age / e._.liveSpan * g.regions[e.region].height
-    e._.age += 1
+    e.y = e.age/ e._.liveSpan * g.regions[e.region].height
 
-    if (e._.age < e._.ageWake) {
+    if (e.age< e._.ageWake) {
       return
     }
 
-    if (killPlayer(e, g, s)) return
     if (projectileDestroyCb(e, g, s)) return
 
-    if (e._.age % e._.interval === 0) {
+    if (e.age% e._.interval === 0) {
       const count = 3
       for (let i = 0; i < count; i++) {
         project2(
@@ -234,83 +230,59 @@ setup((g) => {
         )
       }
     }
-
-    if (e._.hp === 0) {
-      destroy(e)
-    }
   }
 
   function swingBulletCb(e, g, s) {
-    e.y = e._.age / e._.liveSpan * g.regions[e.region].height
-    e._.age += 1
+    e.y = e.age / e._.liveSpan * g.regions[e.region].height
 
-    if (e._.age < e._.ageWake) {
+    if (e.age < e._.ageWake) {
       return
     }
 
-    if (killPlayer(e, g, s)) return
     if (projectileDestroyCb(e, g, s)) return
 
-    if (e._.age % e._.interval === 0) {
+    if (e.age % e._.interval === 0) {
       const count = 3
       for (let i = 0; i < count; i++) {
         project2(
           e.x,
           e.y,
-          Math.PI / 2 + Math.cos(Math.PI * e._.age / e._.interval / 10) * Math.PI / 5,
+          Math.PI / 2 + Math.cos(Math.PI * e.age / e._.interval / 10) * Math.PI / 5,
           0,
           200,
           e._.bulletRadius
         )
       }
     }
-
-    if (e._.hp === 0) {
-      destroy(e)
-    }
   }
+
   function noBulletCb(e, g, s) {
-    e.y = e._.age / e._.liveSpan * g.regions[e.region].height
-    e._.age += 1
+    e.y = e.age / e._.liveSpan * g.regions[e.region].height
 
-    if (e._.age < e._.ageWake) {
-      return
-    }
-
-    if (killPlayer(e, g, s)) return
     if (projectileDestroyCb(e, g, s)) return
-
-    if (e._.hp === 0) {
-      destroy(e)
-    }
   }
-  function swappingBulletCb(e, g, s) {
-    e.y = e._.age / e._.liveSpan * g.regions[e.region].height
-    e._.age += 1
 
-    if (e._.age < e._.ageWake) {
+  function swappingBulletCb(e, g, s) {
+    e.y = e.age / e._.liveSpan * g.regions[e.region].height
+
+    if (e.age < e._.ageWake) {
       return
     }
 
-    if (killPlayer(e, g, s)) return
     if (projectileDestroyCb(e, g, s)) return
 
-    if (e._.age % e._.interval === 0) {
+    if (e.age % e._.interval === 0) {
       const count = 3
       for (let i = 0; i < count; i++) {
         project2(
           e.x + (i - (count - 1) / 2) * 80,
           e.y,
-          Math.PI / 2 + Math.cos(Math.PI * e._.age / e._.interval) * Math.PI / 10,
+          Math.PI / 2 + Math.cos(Math.PI * e.age / e._.interval) * Math.PI / 10,
           0,
           100,
           e._.bulletRadius
         )
       }
-    }
-
-    if (e._.hp === 0) {
-      destroy(e)
     }
   }
 
@@ -345,17 +317,23 @@ setup((g) => {
     e.radius = radius
 
     addComponent(e, 'collisionTarget')
+    e.ct_zone = 'player'
+
+    addComponent(e, 'damage')
+    e.damage_zone = 'player'
+    e.damage = 1
+
     addComponent(e, 'collisionSource')
+    e.cs_zone = 'enemy'
     e.cType = 'ball'
     e.cRadius = 20
 
-    e._.hp = hp
-
-    e._.type = 'enemy'
+    addComponent(e, 'health')
+    e.health_zone = 'enemy'
+    e.health = hp
 
     addComponent(e, 'event')
     e._.interval = interval
-    e._.age = 0
     e._.ageWake = 0
     e._.liveSpan = liveSpan
     e._.bulletRadius = bulletRadius
@@ -365,19 +343,8 @@ setup((g) => {
       cb(e, g, s)
     }
   }
-  // bullet cb
-  function bulletCb(e, g, s) {
-    if (e.ctCollided && e.ctHitOn._.type === 'enemy') {
-      if (e.ctHitOn._.hp) {
-        e.ctHitOn._.hp -= 1
-      }
 
-      destroy(e)
-    }
-    projectileDestroyCb(e, g, s)
-  }
-
-  function spawnBullet(x, y, vx, vy) {
+  function spawnPlayerBullet(x, y, vx, vy) {
     // spawner
     const e = addEntity()
     addComponent(e, 'pos')
@@ -387,15 +354,23 @@ setup((g) => {
     addComponent(e, 'physic')
     e.vx = vx
     e.vy = vy
+
     addComponent(e, 'draw')
     e.drawType = 'ball'
     e.radius = 5
+
     addComponent(e, 'event')
-    e.cb = bulletCb
+    e.cb = projectileDestroyCb
 
     addComponent(e, 'collisionTarget')
+    e.ct_zone = 'enemy'
     e.cType = 'ball'
     e.cRadius = 5
+
+    addComponent(e, 'damage')
+    e.damage_zone = 'enemy'
+    e.damage = 1
+    e.damage_cb = destroy
   }
 
   function spawnPlayer() {
@@ -411,6 +386,23 @@ setup((g) => {
     e.drawType = 'ball'
     e.radius = 10
 
+
+    addComponent(e, 'collisionSource')
+    e.cs_zone = 'player'
+    e.cType = 'ball'
+    e.cRadius = 4
+
+    addComponent(e, 'health')
+    e.health_zone = 'player'
+    e.health = 1
+
+    e.health_cb = (e, g, s) => {
+      if (e.health <= 0) {
+        clear()
+        spawnHomeScreen('You dead, try again')
+      }
+    }
+
     addComponent(e, 'trackCursor')
     e.trackCursorMaxDistance = 100
     e.x = g.mouseX
@@ -419,22 +411,13 @@ setup((g) => {
 
     addComponent(e, 'event')
     e._.interval = 20;
-    e._.age = 0
     e.cb = (e) => {
-      if (e._.age % e._.interval === 0) {
-        spawnBullet(e.x, e.y, 0, -500)
-        spawnBullet(e.x, e.y, 100, -500)
-        spawnBullet(e.x, e.y, -100, -500)
+      if (e.age % e._.interval === 0) {
+        spawnPlayerBullet(e.x, e.y, 0, -500)
+        spawnPlayerBullet(e.x, e.y, 100, -500)
+        spawnPlayerBullet(e.x, e.y, -100, -500)
       }
-      e._.age++
     }
-
-    addComponent(e, 'collisionSource')
-    e.cType = 'ball'
-    e.cRadius = 4
-
-    e._.type = 'player'
-    e._.immune = false
   }
 
   function spawnHealthBar() {
@@ -446,7 +429,8 @@ setup((g) => {
       const height = 20
 
       e.bx1 = -length / 2
-      e.bx2 = -length / 2 + length * g.boss._.hp / g.boss._.hpMax
+
+      e.bx2 = -length / 2 + length * g.boss.health / g.boss._.hpMax
       e.by1 = -height / 2
       e.by2 = height / 2
     }
@@ -580,7 +564,7 @@ setup((g) => {
             x: 0,
             xCb(e, g, s) {
               return Math.cos(Math.PI * time / 60 / 2
-                + Math.PI * e._.age / 60) * g.regions[e.region].width / 2.1
+                + Math.PI * e.age / 60) * g.regions[e.region].width / 2.1
             },
             hp: 2,
             cb: swappingBulletCb,

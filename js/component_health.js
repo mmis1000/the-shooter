@@ -1,12 +1,12 @@
 function defaultHpCb (e) {
-  if (e.hp < 0) {
+  if (e.health <= 0) {
     destroy(e)
   }
 }
 
 components.health = (e) => {
-  e.has_health
+  e.has_health = true
   e.health_cb = defaultHpCb
-  e.health = 4
+  e.health = 1
   e.health_zone = 'world'
 }

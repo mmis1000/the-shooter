@@ -1,6 +1,7 @@
 components.collisionSource = (e) => {
   // cs -> collisionSource
   e.cs = true
+  e.cs_zone = 'world'
 
   // c -> collision
   e.cType = 'block' //'ball' | 'block'

@@ -15,6 +15,7 @@ const components = {
 
 function addEntity () {
   const e = {
+    age: 0,
     destroyed: false
   }
 
@@ -79,6 +80,10 @@ function tick (ms) {
   }
 
   gc()
+
+  for (let e of entities) {
+    e.age++;
+  }
 
   requestAnimationFrame(tick)
 }
