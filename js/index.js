@@ -119,6 +119,8 @@ setup((g) => {
 
     e.health_cb = (e, g, s) => {
       if (e.health <= 0) {
+        g.score._.score += 1000;
+
         destroy(e)
         destroy(g.healthBar)
 
@@ -129,12 +131,13 @@ setup((g) => {
           project(e.x, e.y, direction)
         }
 
-        g.countDown = 180
-        g.cb = (g, s) => {
-          g.countDown--
-          if (g.countDown < 0) {
+        const timer = addEntity()
+        addComponent(timer, 'event')
+        timer.cb = (e, g, s) => {
+          if (e.age > 180) {
+            destroy(timer)
             clear()
-            spawnHomeScreen('You win, Click to start again')
+            spawnHomeScreen('You win, Click to start again', `Final score: ${g.score._.score}`)
           }
         }
       }
@@ -332,6 +335,12 @@ setup((g) => {
     addComponent(e, 'health')
     e.health_zone = 'enemy'
     e.health = hp
+    e.health_cb = (e, g, s) => {
+      if (e.health <= 0) {
+        destroy(e)
+        g.score._.score += 100
+      }
+    }
 
     addComponent(e, 'event')
     e._.interval = interval
@@ -393,7 +402,7 @@ setup((g) => {
     e.cType = 'ball'
     e.cRadius = 4
 
-    addComponent(e, 'health')
+    // addComponent(e, 'health')
     e.health_zone = 'player'
     e.health = 1
 
@@ -416,6 +425,27 @@ setup((g) => {
         spawnPlayerBullet(e.x, e.y, -100, -500)
       }
     }
+  }
+
+  function spawnScore() {
+    // spawner
+    const e = g.score = addEntity()
+    e._.score = 0
+
+    addComponent(e, 'pos')
+    e.region = 'stage'
+
+    addComponent(e, 'event')
+    e.cb= (e, g, s) => {
+      e.x = g.regions[e.region].width - 100
+      e.y = 40
+      e.text = String(e._.score)
+    }
+
+    addComponent(e, 'draw')
+    e.drawType = 'text'
+    e.text = ''
+    e.textFont = Math.floor(Math.min(60, g.regions[e.region].width / 15)) + 'px Arial'
   }
 
   function spawnHealthBar() {
@@ -448,7 +478,7 @@ setup((g) => {
     update(e, g)
   }
 
-  function spawnHomeScreen(text) {
+  function spawnHomeScreen(text, text2) {
     exitTouchMouseMode(g);
 
     {
@@ -466,6 +496,30 @@ setup((g) => {
       addComponent(e, 'draw')
       e.drawType = 'text'
       e.text = text
+      e.textFont = Math.floor(Math.min(60, g.regions[e.region].width / 15)) + 'px Arial'
+
+      addComponent(e, 'resizeEvent')
+
+      e.resizeCb = (e, g) => {
+        e.textFont = Math.floor(Math.min(60, g.regions[e.region].width / 15)) + 'px Arial'
+      }
+    }
+
+    if (text2 !== undefined) {
+      //text
+      const e = addEntity()
+      addComponent(e, 'pos')
+      e.region = 'stage'
+
+      addComponent(e, 'event')
+      e.cb= (e, g, s) => {
+        e.x = g.regions[e.region].width / 2
+        e.y = g.regions[e.region].height * 0.8 + 80
+      }
+
+      addComponent(e, 'draw')
+      e.drawType = 'text'
+      e.text = text2
       e.textFont = Math.floor(Math.min(60, g.regions[e.region].width / 15)) + 'px Arial'
 
       addComponent(e, 'resizeEvent')
@@ -587,6 +641,7 @@ setup((g) => {
   function startGame() {
     spawnDirector()
     spawnPlayer()
+    spawnScore()
   }
 
   function clear() {
