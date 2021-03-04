@@ -24,10 +24,24 @@ const updatePositions = (g, x, y, down = false) => {
   }
 }
 
+const startTouchMouseMode = (g, x, y) => {
+  updatePositions(g, x, y)
+  g.touchMouseBase = { x, y }
+  g.touchRelativeMode = true
+}
+const exitTouchMouseMode = (g) => {
+  g.touchRelativeMode = false
+}
+
 systems.push({
   name: 'trackCursor',
   dependsOn: ['regions'],
   init(g) {
+    g.hasTouch = false
+    g.touchRelativeMode = false
+    g.touchMouseBase = null
+    g.touchTouchBase = null
+    g.touchRaw = null
     g.mouseRegions = {
       /**
        * regionA: {
@@ -40,31 +54,53 @@ systems.push({
 
     updatePositions(-1, -1, false)
 
+    g.canvas.addEventListener('mousedown', function (e) {
+      if (g.hasTouch) return
+      const rect = g.canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      updatePositions(g, x, y, true)
+    })
+
     g.canvas.addEventListener('mousemove', function (e) {
+      if (g.hasTouch) return
       const rect = g.canvas.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
       updatePositions(g, x, y)
     })
+
+    g.canvas.addEventListener('touchstart', function (e) {
+      g.hasTouch = true;
+
+      const rect = g.canvas.getBoundingClientRect();
+      const t = e.touches[0]
+      const x = t.clientX - rect.left;
+      const y = t.clientY - rect.top;
+
+      g.touchTouchBase = { x, y }
+      g.touchMouseBase = { x: g.mouseX, y: g.mouseY }
+      if (g.touchRelativeMode) {
+        // do nothing
+      } else {
+        updatePositions(g, x, y, true)
+      }
+    })
+
     g.canvas.addEventListener('touchmove', function (e) {
       const rect = g.canvas.getBoundingClientRect();
       const t = e.touches[0]
       const x = t.clientX - rect.left;
       const y = t.clientY - rect.top;
-      updatePositions(g, x, y)
-    })
-    g.canvas.addEventListener('mousedown', function (e) {
-      const rect = g.canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      updatePositions(g, x, y, true)
-    })
-    g.canvas.addEventListener('touchstart', function (e) {
-      const rect = g.canvas.getBoundingClientRect();
-      const t = e.touches[0]
-      const x = t.clientX - rect.left;
-      const y = t.clientY - rect.top;
-      updatePositions(g, x, y, true)
+      if (g.touchRelativeMode) {
+        updatePositions(
+          g,
+          g.touchMouseBase.x + x - g.touchTouchBase.x,
+          g.touchMouseBase.y + y - g.touchTouchBase.y
+        )
+      } else {
+        updatePositions(g, x, y)
+      }
     })
   },
   tick(s, g) {

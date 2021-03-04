@@ -18,6 +18,8 @@ setup((g) => {
   }
 
   const updateSize = () => {
+    const regionWindow = g.regions['window']
+
     if (
       regionStage.height / regionStage.width
       > regionWindow.height / regionWindow.width
@@ -378,9 +380,9 @@ setup((g) => {
     const e = g.player = addEntity()
 
     addComponent(e, 'pos')
-    e.x = -9999
-    e.y = -9999
     e.region = 'stage'
+    e.x = g.regions['stage'].width / 2
+    e.y = g.regions['stage'].height * 4 / 5
 
     addComponent(e, 'draw')
     e.drawType = 'ball'
@@ -405,9 +407,6 @@ setup((g) => {
 
     addComponent(e, 'trackCursor')
     e.trackCursorMaxDistance = 100
-    e.x = g.mouseX
-    e.y = g.mouseY
-
 
     addComponent(e, 'event')
     e._.interval = 20;
@@ -451,6 +450,8 @@ setup((g) => {
   }
 
   function spawnHomeScreen(text) {
+    exitTouchMouseMode(g);
+
     {
       //text
       const e = g.homeScreenText = addEntity()
@@ -458,8 +459,7 @@ setup((g) => {
       e.region = 'stage'
 
       addComponent(e, 'event')
-
-      e.cb = function (e, g) {
+      e.cb= (e, g, s) => {
         e.x = g.regions[e.region].width / 2
         e.y = g.regions[e.region].height * 0.8
       }
@@ -492,6 +492,16 @@ setup((g) => {
       e.clickBy1 = -100
       e.clickBy2 = 100
       e.clickCb = (e, g, s) => {
+        const { x, y } = localToGlobal(
+          g.regions['stage'].width / 2, g.regions['stage'].height * 4 / 5,
+          g.regions['stage'].top, g.regions['stage'].left,
+          g.regions['stage'].scale
+        )
+        startTouchMouseMode(
+          g,
+          x,
+          y
+        )
         clear()
         startGame()
       }
