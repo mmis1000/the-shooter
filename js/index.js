@@ -122,7 +122,6 @@ setup((g) => {
         g.score._.score += 1000;
 
         destroy(e)
-        destroy(g.healthBar)
 
         // g.player._.immune = true
 
@@ -402,9 +401,11 @@ setup((g) => {
     e.cType = 'ball'
     e.cRadius = 4
 
-    // addComponent(e, 'health')
-    e.health_zone = 'player'
-    e.health = 1
+    if (!/** @type {any} */(window).god) {
+      addComponent(e, 'health')
+      e.health_zone = 'player'
+      e.health = 1
+    }
 
     e.health_cb = (e, g, s) => {
       if (e.health <= 0) {
@@ -449,33 +450,63 @@ setup((g) => {
   }
 
   function spawnHealthBar() {
+    const height = 20
+
     function update(e, g) {
+      e.x = g.regions[e.region].width / 2
+      e.y = g.regions[e.region].height * 0.1 + height / 2
+
+      const length = g.regions[e.region].width / 3
+
+      e.bx1 = -length / 2
+
+      e.bx2 = -length / 2 + length * Math.max(g.boss.health / g.boss._.hpMax * 2 - 1, 0)
+      e.by1 = -height / 4
+      e.by2 = height / 4
+    }
+
+    function update1(e, g) {
       e.x = g.regions[e.region].width / 2
       e.y = g.regions[e.region].height * 0.1
 
       const length = g.regions[e.region].width / 3
-      const height = 20
 
       e.bx1 = -length / 2
 
-      e.bx2 = -length / 2 + length * g.boss.health / g.boss._.hpMax
-      e.by1 = -height / 2
-      e.by2 = height / 2
+      e.bx2 = -length / 2 + length * Math.max(Math.min(g.boss.health / g.boss._.hpMax * 2, 1), 0)
+      e.by1 = -height / 4
+      e.by2 = height / 4
     }
+    {
+      // hp bar 1
+      const e = g.healthBar = addEntity()
 
-    // hp bar
-    const e = g.healthBar = addEntity()
+      addComponent(e, 'pos')
+      e.region = 'stage'
 
-    addComponent(e, 'pos')
-    e.region = 'stage'
+      addComponent(e, 'draw')
+      e.drawType = 'block'
 
-    addComponent(e, 'draw')
-    e.drawType = 'block'
+      addComponent(e, 'event')
+      e.cb = update
 
-    addComponent(e, 'event')
-    e.cb = update
+      update(e, g)
+    }
+    {
+      // hp bar 2
+      const e = g.healthBar = addEntity()
 
-    update(e, g)
+      addComponent(e, 'pos')
+      e.region = 'stage'
+
+      addComponent(e, 'draw')
+      e.drawType = 'block'
+
+      addComponent(e, 'event')
+      e.cb = update1
+
+      update(e, g)
+    }
   }
 
   function spawnHomeScreen(text, text2) {
@@ -600,6 +631,17 @@ setup((g) => {
             x: 0,
             xCb(e, g, s) {
               return Math.cos(Math.PI * e.age / 30) * 75 - 200
+            },
+            cb: noBulletCb,
+            hp: 4,
+            interval: 20,
+            liveSpan: 60
+          })
+
+          spawnSmall({
+            x: 0,
+            xCb(e, g, s) {
+              return 0
             },
             cb: noBulletCb,
             hp: 4,
