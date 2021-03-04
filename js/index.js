@@ -2,7 +2,6 @@
 init()
 
 setup((g) => {
-  const regionWindow = g.regions['window']
   const regionStage = g.regions['stage_dec'] = g.regions['stage'] = {
     left: 0,
     top: 0,
@@ -249,7 +248,7 @@ setup((g) => {
         project2(
           e.x,
           e.y,
-          Math.PI / 2 + Math.cos(Math.PI * e.age / e._.interval / 10) * Math.PI / 5,
+          Math.PI / 2 + Math.cos(Math.PI * e.age / e._.interval / 10) * Math.PI / 4,
           0,
           200,
           e._.bulletRadius
@@ -514,11 +513,8 @@ setup((g) => {
 
     e.region = 'stage'
 
-    e._.time = 0
-
     e.cb = (e, g, s) => {
-      e._.time++
-      const time = e._.time
+      const time = e.age
 
       if (time < 60 * 10) {
         // 10 second
@@ -531,7 +527,7 @@ setup((g) => {
               return -200
             },
             cb: swingBulletCb,
-            hp: 2,
+            hp: 3,
             interval: 20
           })
           spawnSmall({
@@ -540,7 +536,7 @@ setup((g) => {
               return 200
             },
             cb: swingBulletCb,
-            hp: 2,
+            hp: 3,
             interval: 20
           })
         }
@@ -549,7 +545,7 @@ setup((g) => {
           spawnSmall({
             x: 0,
             xCb(e, g, s) {
-              return -75
+              return Math.cos(Math.PI * e.age / 30) * 75 - 200
             },
             cb: noBulletCb,
             hp: 4,
@@ -560,7 +556,7 @@ setup((g) => {
           spawnSmall({
             x: 0,
             xCb(e, g, s) {
-              return 75
+              return Math.cos(Math.PI * e.age / 30) * -75 + 200
             },
             cb: noBulletCb,
             hp: 4,

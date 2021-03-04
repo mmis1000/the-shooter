@@ -86,21 +86,6 @@ systems.push({
     )
     g.ctx.globalAlpha = 1;
 
-    g.ctx.save()
-
-    // g.ctx.fillStyle = "rgba(255, 255, 255, 0.1)";
-    // for (let e of getByComponent ('draw')) {
-    //   switch (e.drawType) {
-    //     case 'drop':
-    //       g.ctx.save()
-    //       g.ctx.translate(e.x, e.y)
-    //       g.ctx.rotate(-Math.atan(e.vx / e.vy))
-    //       g.ctx.fillRect(-0.5, -tailLength, 1, tailLength);
-    //       g.ctx.restore()
-    //       break
-    //   }
-    // }
-
     /**
      * @param {CanvasRenderingContext2D} ctx
      */
@@ -114,6 +99,20 @@ systems.push({
       ctx.clip()
     }
 
+    const correctPosition = (e, g) => {
+      if (!e.has_physic) {
+        return { x: e.x, y: e.y }
+      } else {
+        const now = Date.now()
+        const prevUpdate = g.prevUpdate
+        const diff = (now - prevUpdate) / 1000
+        return {
+          x: e.x + e.vx * diff,
+          y: e.y + e.vy * diff
+        }
+      }
+    }
+
     for (const region in g.regions) {
       g.ctx.save()
       g.ctx.translate(g.regions[region].left, g.regions[region].top)
@@ -123,8 +122,10 @@ systems.push({
       g.ctx.strokeStyle = "rgba(255, 255, 255, 1)";
       for (let e of getByComponent ('draw')) {
         if (e.drawType === 'ball' && e.region === region) {
+          const { x, y } = correctPosition(e, g)
+
           g.ctx.beginPath();
-          g.ctx.arc(e.x, e.y, e.radius, 0, 2 * Math.PI);
+          g.ctx.arc(x, y, e.radius, 0, 2 * Math.PI);
           g.ctx.stroke();
         }
       }
@@ -132,35 +133,35 @@ systems.push({
       g.ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
       for (let e of getByComponent ('draw')) {
         if (e.drawType === 'block' && e.region === region) {
-          g.ctx.fillRect(e.x + e.bx1, e.y + e.by1, e.bx2 - e.bx1, e.by2 - e.by1);
+          const { x, y } = correctPosition(e, g)
+
+          g.ctx.fillRect(x + e.bx1, y + e.by1, e.bx2 - e.bx1, e.by2 - e.by1);
         }
       }
 
       g.ctx.strokeStyle = "rgba(255, 255, 255, 0.5)";
       for (let e of getByComponent ('draw')) {
         if (e.drawType === 'block_s' && e.region === region) {
-          g.ctx.strokeRect(e.x + e.bx1, e.y + e.by1, e.bx2 - e.bx1, e.by2 - e.by1);
+          const { x, y } = correctPosition(e, g)
 
+          g.ctx.strokeRect(x + e.bx1, y + e.by1, e.bx2 - e.bx1, e.by2 - e.by1);
         }
       }
 
       g.ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
       for (let e of getByComponent ('draw')) {
         if (e.drawType === 'text' && e.region === region) {
+          const { x, y } = correctPosition(e, g)
+
           g.ctx.font = e.textFont
           g.ctx.textBaseline = "middle"
           g.ctx.textAlign = "center"
-          g.ctx.fillText(e.text, e.x, e.y);
+          g.ctx.fillText(e.text, x, y);
         }
       }
 
       g.ctx.restore()
     }
-
-    // g.ctx.font = "30px Arial";
-    // g.ctx.strokeText((s * 1000).toFixed(2) + "ms", 10, 50);
-
-    g.ctx.restore()
 
     g.bufferCtx.clearRect(0, 0, g.bufferCanvas.width, g.bufferCanvas.height)
     g.bufferCtx.drawImage(g.canvas, 0, 0)

@@ -62,16 +62,16 @@ const systems = [
 
 // ticker
 
-let prev = null
+const tps = 60
+const diff = 1 / tps
+let prev = Date.now()
+const minNext = 1 / tps / 5
 
-function tick (ms) {
-  if (prev == null) {
-    prev = ms / 1000 - 0.016
-  }
+function tick () {
+  const untilNext = Math.max((prev + diff) - Date.now(), minNext)
+  prev = Date.now();
 
-  const diff = Math.min(ms / 1000 - prev, maxTickLength) * speedRatio
-
-  prev = ms / 1000
+  globals.prevUpdate = prev
 
   for (let sys of systems) {
     if (sys.tick) {
@@ -85,7 +85,7 @@ function tick (ms) {
     e.age++;
   }
 
-  requestAnimationFrame(tick)
+  setTimeout(tick, untilNext)
 }
 // setup
 
@@ -106,5 +106,6 @@ function init () {
 // run
 
 function start () {
-  requestAnimationFrame(tick)
+  prev = Date.now() - diff
+  tick()
 }
