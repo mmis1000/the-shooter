@@ -1,7 +1,7 @@
 init()
 
 setup((g) => {
-  g.regions['stage'] = {
+  g.regions['stage_dec'] = g.regions['stage'] = {
     left: 0,
     top: 0,
     width: 720,
@@ -9,7 +9,7 @@ setup((g) => {
     scale: 1
   }
 
-  g.mouseRegions['stage'] = {
+  g.mouseRegions['stage_dec'] = g.mouseRegions['stage'] = {
     x: 0,
     y: 0,
     clickDOwn: false
@@ -21,13 +21,13 @@ setup((g) => {
       > g.regions['window'].height / g.regions['window'].width
     ) {
       // game is taller
-      const scale =g.regions['window'].height /  g.regions['stage'].height
+      const scale = g.regions['window'].height / g.regions['stage'].height
       g.regions['stage'].scale = scale
       g.regions['stage'].top = 0;
       g.regions['stage'].left = g.regions['window'].width / 2 - (g.regions['stage'].width * scale) / 2
     } else {
       // game is taller
-      const scale =  g.regions['window'].width / g.regions['stage'].width
+      const scale = g.regions['window'].width / g.regions['stage'].width
       g.regions['stage'].scale = scale
       g.regions['stage'].left = 0;
       g.regions['stage'].top = g.regions['window'].height / 2 - (g.regions['stage'].height * scale) / 2
@@ -38,7 +38,7 @@ setup((g) => {
 
   g.resizeCb = updateSize
 
-  function projectileDestroyCb (e, g, s) {
+  function projectileDestroyCb(e, g, s) {
     if (e.x < 0 || e.y < 0 || e.x > g.regions[e.region].width || e.y > g.regions[e.region].height) {
       destroy(e)
       return true
@@ -47,10 +47,10 @@ setup((g) => {
     }
   }
 
-  function killPlayer (e, g, s) {
+  function killPlayer(e, g, s) {
     if (e.ctCollided && e.ctHitOn._.type === 'player' && !e.ctHitOn._.immune) {
-      clear ()
-      spawnHomeScreen ('You dead, try again')
+      clear()
+      spawnHomeScreen('You dead, try again')
 
       return true
     } else {
@@ -59,10 +59,10 @@ setup((g) => {
   }
 
   // bullet cb
-  function enemyBulletCb (e, g, s) {
+  function enemyBulletCb(e, g, s) {
     if (killPlayer(e, g, s)) return
 
-    projectileDestroyCb (e, g, s)
+    projectileDestroyCb(e, g, s)
   }
 
   function project(x, y, arc, distance = 100, base = 100, bulletRadius = 10) {
@@ -97,7 +97,7 @@ setup((g) => {
     e.cRadius = bulletRadius
   }
 
-  function spawnBoss () {
+  function spawnBoss() {
     // spawner
     const e = g.boss = addEntity()
 
@@ -158,7 +158,7 @@ setup((g) => {
         destroy(e)
         destroy(g.healthBar)
 
-        g.player._.immune = true
+        // g.player._.immune = true
 
         for (let i = 0; i < 60; i++) {
           var direction = Math.PI * 2 / 60 * i
@@ -170,7 +170,7 @@ setup((g) => {
           g.countDown--
           if (g.countDown < 0) {
             clear()
-            spawnHomeScreen ('You win, Click to start again')
+            spawnHomeScreen('You win, Click to start again')
           }
         }
       }
@@ -210,67 +210,111 @@ setup((g) => {
     e.cRadius = bulletRadius
   }
 
-  function straightBulletCb (e, g, s) {
-      e.y = e._.age / e._.liveSpan * g.regions[e.region].height
-      e._.age += 1
+  function straightBulletCb(e, g, s) {
+    e.y = e._.age / e._.liveSpan * g.regions[e.region].height
+    e._.age += 1
 
-      if (e._.age < e._.ageWake) {
-        return
+    if (e._.age < e._.ageWake) {
+      return
+    }
+
+    if (killPlayer(e, g, s)) return
+    if (projectileDestroyCb(e, g, s)) return
+
+    if (e._.age % e._.interval === 0) {
+      const count = 3
+      for (let i = 0; i < count; i++) {
+        project2(
+          e.x + (i - (count - 1) / 2) * 80,
+          e.y,
+          Math.PI / 2,
+          0,
+          100,
+          e._.bulletRadius
+        )
       }
+    }
 
-      if (killPlayer(e, g, s)) return
-      if (projectileDestroyCb (e, g, s)) return
-
-      if (e._.age % e._.interval === 0) {
-        const count = 3
-        for (let i = 0; i < count; i++) {
-          project2(
-            e.x + (i - (count - 1) / 2) * 80,
-            e.y,
-            Math.PI / 2,
-            0,
-            100,
-            e._.bulletRadius
-          )
-        }
-      }
-
-      if (e._.hp === 0) {
-        destroy(e)
-      }
+    if (e._.hp === 0) {
+      destroy(e)
+    }
   }
 
-  function swappingBulletCb (e, g, s) {
-      e.y = e._.age / e._.liveSpan * g.regions[e.region].height
-      e._.age += 1
+  function swingBulletCb(e, g, s) {
+    e.y = e._.age / e._.liveSpan * g.regions[e.region].height
+    e._.age += 1
 
-      if (e._.age < e._.ageWake) {
-        return
+    if (e._.age < e._.ageWake) {
+      return
+    }
+
+    if (killPlayer(e, g, s)) return
+    if (projectileDestroyCb(e, g, s)) return
+
+    if (e._.age % e._.interval === 0) {
+      const count = 3
+      for (let i = 0; i < count; i++) {
+        project2(
+          e.x,
+          e.y,
+          Math.PI / 2 + Math.cos(Math.PI * e._.age / e._.interval / 10) * Math.PI / 5,
+          0,
+          200,
+          e._.bulletRadius
+        )
       }
+    }
 
-      if (killPlayer(e, g, s)) return
-      if (projectileDestroyCb (e, g, s)) return
+    if (e._.hp === 0) {
+      destroy(e)
+    }
+  }
+  function noBulletCb(e, g, s) {
+    e.y = e._.age / e._.liveSpan * g.regions[e.region].height
+    e._.age += 1
 
-      if (e._.age % e._.interval === 0) {
-        const count = 3
-        for (let i = 0; i < count; i++) {
-          project2(
-            e.x + (i - (count - 1) / 2) * 80,
-            e.y,
-            Math.PI / 2 + Math.cos(Math.PI * e._.age / e._.interval) * Math.PI / 10,
-            0,
-            100,
-            e._.bulletRadius
-          )
-        }
+    if (e._.age < e._.ageWake) {
+      return
+    }
+
+    if (killPlayer(e, g, s)) return
+    if (projectileDestroyCb(e, g, s)) return
+
+    if (e._.hp === 0) {
+      destroy(e)
+    }
+  }
+  function swappingBulletCb(e, g, s) {
+    e.y = e._.age / e._.liveSpan * g.regions[e.region].height
+    e._.age += 1
+
+    if (e._.age < e._.ageWake) {
+      return
+    }
+
+    if (killPlayer(e, g, s)) return
+    if (projectileDestroyCb(e, g, s)) return
+
+    if (e._.age % e._.interval === 0) {
+      const count = 3
+      for (let i = 0; i < count; i++) {
+        project2(
+          e.x + (i - (count - 1) / 2) * 80,
+          e.y,
+          Math.PI / 2 + Math.cos(Math.PI * e._.age / e._.interval) * Math.PI / 10,
+          0,
+          100,
+          e._.bulletRadius
+        )
       }
+    }
 
-      if (e._.hp === 0) {
-        destroy(e)
-      }
+    if (e._.hp === 0) {
+      destroy(e)
+    }
   }
 
-  function spawnSmall ({
+  function spawnSmall({
     x = 0,
     radius = 20,
     hp = 2,
@@ -280,15 +324,15 @@ setup((g) => {
     bulletRadius = 5,
     xCb = (e, g, s) => 0
   } = {
-    x: 0,
-    radius: 20,
-    hp: 2,
-    interval: 20,
-    liveSpan: 60 * 5,
-    cb: straightBulletCb,
-    bulletRadius: 5,
-    xCb: (e, g, s) => 0
-  }) {
+      x: 0,
+      radius: 20,
+      hp: 2,
+      interval: 20,
+      liveSpan: 60 * 5,
+      cb: straightBulletCb,
+      bulletRadius: 5,
+      xCb: (e, g, s) => 0
+    }) {
     const e = addEntity()
 
     addComponent(e, 'pos')
@@ -322,7 +366,7 @@ setup((g) => {
     }
   }
   // bullet cb
-  function bulletCb (e, g, s) {
+  function bulletCb(e, g, s) {
     if (e.ctCollided && e.ctHitOn._.type === 'enemy') {
       if (e.ctHitOn._.hp) {
         e.ctHitOn._.hp -= 1
@@ -333,7 +377,7 @@ setup((g) => {
     projectileDestroyCb(e, g, s)
   }
 
-  function spawnBullet (x, y, vx, vy) {
+  function spawnBullet(x, y, vx, vy) {
     // spawner
     const e = addEntity()
     addComponent(e, 'pos')
@@ -354,7 +398,7 @@ setup((g) => {
     e.cRadius = 5
   }
 
-  function spawnPlayer () {
+  function spawnPlayer() {
     // player
     const e = g.player = addEntity()
 
@@ -378,9 +422,9 @@ setup((g) => {
     e._.age = 0
     e.cb = (e) => {
       if (e._.age % e._.interval === 0) {
-        spawnBullet (e.x, e.y, 0, -500)
-        spawnBullet (e.x, e.y, 100, -500)
-        spawnBullet (e.x, e.y, -100, -500)
+        spawnBullet(e.x, e.y, 0, -500)
+        spawnBullet(e.x, e.y, 100, -500)
+        spawnBullet(e.x, e.y, -100, -500)
       }
       e._.age++
     }
@@ -393,8 +437,8 @@ setup((g) => {
     e._.immune = false
   }
 
-  function spawnHealthBar () {
-    function update (e, g) {
+  function spawnHealthBar() {
+    function update(e, g) {
       e.x = g.regions[e.region].width / 2
       e.y = g.regions[e.region].height * 0.1
 
@@ -419,10 +463,10 @@ setup((g) => {
     addComponent(e, 'event')
     e.cb = update
 
-    update (e, g)
+    update(e, g)
   }
 
-  function spawnHomeScreen (text) {
+  function spawnHomeScreen(text) {
     {
       //text
       const e = g.homeScreenText = addEntity()
@@ -470,9 +514,11 @@ setup((g) => {
     }
   }
 
-  function spawnDirector () {
+  function spawnDirector() {
     const e = g.homeScreenText = addEntity()
     addComponent(e, 'event')
+
+    e.region = 'stage'
 
     e._.time = 0
 
@@ -484,19 +530,48 @@ setup((g) => {
         // 10 second
 
         // every .5 second
-        if (time % 30 === 0) {
+        if (time % 60 === 0) {
           spawnSmall({
             x: 0,
             xCb(e, g, s) {
-              return Math.cos(
-                Math.PI * time / 60 / 2
-                + Math.PI * e._.age / 60
-              )
-                * g.regions[e.region].width / 2.1
+              return -200
             },
-            cb: straightBulletCb,
+            cb: swingBulletCb,
             hp: 2,
             interval: 20
+          })
+          spawnSmall({
+            x: 0,
+            xCb(e, g, s) {
+              return 200
+            },
+            cb: swingBulletCb,
+            hp: 2,
+            interval: 20
+          })
+        }
+
+        if (time % 120 === 0) {
+          spawnSmall({
+            x: 0,
+            xCb(e, g, s) {
+              return -75
+            },
+            cb: noBulletCb,
+            hp: 4,
+            interval: 20,
+            liveSpan: 60
+          })
+
+          spawnSmall({
+            x: 0,
+            xCb(e, g, s) {
+              return 75
+            },
+            cb: noBulletCb,
+            hp: 4,
+            interval: 20,
+            liveSpan: 60
           })
         }
       } else if (time >= 60 * 10 && time < 60 * 20) {
@@ -505,7 +580,7 @@ setup((g) => {
             x: 0,
             xCb(e, g, s) {
               return Math.cos(Math.PI * time / 60 / 2
-                              + Math.PI * e._.age / 60) * g.regions[e.region].width / 2.1
+                + Math.PI * e._.age / 60) * g.regions[e.region].width / 2.1
             },
             hp: 2,
             cb: swappingBulletCb,
@@ -514,23 +589,39 @@ setup((g) => {
         }
       } else if (time === 60 * 25) {
         spawnBoss()
-        spawnHealthBar ()
+        spawnHealthBar()
       }
     }
   }
 
-  function startGame () {
-    spawnDirector ()
-    spawnPlayer ()
+  function startGame() {
+    spawnDirector()
+    spawnPlayer()
   }
 
-  function clear () {
-    entities.forEach(destroy)
+  function clear() {
+    entities.forEach((e) => e.region === 'stage' && destroy(e))
     g.cb = nuzz
   }
 
   // startGame ()
-  spawnHomeScreen ('Click to start')
+  spawnHomeScreen('Click to start')
+
+  {
+    // border
+    const e = addEntity()
+
+    addComponent(e, 'pos')
+    e.region = 'stage_dec'
+
+    addComponent(e, 'draw')
+    e.drawType = 'block_s'
+
+    e.bx1 = 0
+    e.bx2 = g.regions['stage_dec'].width
+    e.by1 = 0
+    e.by2 = g.regions['stage_dec'].height
+  }
 })
 
 start()

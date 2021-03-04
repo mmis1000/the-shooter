@@ -31,6 +31,10 @@ function addComponent (e, name) {
   componentLists.get(name).add(e)
 }
 
+function hasComponent (e, name) {
+  return componentLists.has(name) && componentLists.get(name).has(e)
+}
+
 function destroy(e) {
   e.destroyed = true
 }

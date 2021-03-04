@@ -101,62 +101,61 @@ systems.push({
     //   }
     // }
 
-    g.ctx.strokeStyle = "rgba(255, 255, 255, 1)";
-    for (let e of getByComponent ('draw')) {
-      if (e.drawType === 'ball') {
-        if (e.region) {
-          g.ctx.save()
-          g.ctx.translate(g.regions[e.region].left, g.regions[e.region].top)
-          g.ctx.scale(g.regions[e.region].scale, g.regions[e.region].scale)
-        }
-
-        g.ctx.beginPath();
-        g.ctx.arc(e.x, e.y, e.radius, 0, 2 * Math.PI);
-        g.ctx.stroke();
-
-        if (e.region) {
-          g.ctx.restore()
-        }
-      }
+    /**
+     * @param {CanvasRenderingContext2D} ctx
+     */
+    const clipRect = (ctx, width, height) => {
+      ctx.beginPath()
+      ctx.moveTo(0, 0)
+      ctx.lineTo(width, 0)
+      ctx.lineTo(width, height)
+      ctx.lineTo(0, height)
+      ctx.closePath()
+      ctx.clip()
     }
 
-    g.ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
-    for (let e of getByComponent ('draw')) {
-      if (e.drawType === 'block') {
-        if (e.region) {
-          g.ctx.save()
-          g.ctx.translate(g.regions[e.region].left, g.regions[e.region].top)
-          g.ctx.scale(g.regions[e.region].scale, g.regions[e.region].scale)
-        }
+    for (const region in g.regions) {
+      g.ctx.save()
+      g.ctx.translate(g.regions[region].left, g.regions[region].top)
+      g.ctx.scale(g.regions[region].scale, g.regions[region].scale)
+      clipRect(g.ctx, g.regions[region].width, g.regions[region].height)
 
-        g.ctx.fillRect(e.x + e.bx1, e.y + e.by1, e.bx2 - e.bx1, e.by2 - e.by1);
-
-        if (e.region) {
-          g.ctx.restore()
-        }
-      }
-    }
-
-    g.ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
-    for (let e of getByComponent ('draw')) {
-      if (e.drawType === 'text') {
-        if (e.region) {
-          g.ctx.save()
-          g.ctx.translate(g.regions[e.region].left, g.regions[e.region].top)
-          g.ctx.scale(g.regions[e.region].scale, g.regions[e.region].scale)
-        }
-
-        g.ctx.font = e.textFont
-        g.ctx.textBaseline = "middle"
-        g.ctx.textAlign = "center"
-        g.ctx.fillText(e.text, e.x, e.y);
-
-        if (e.region) {
-          g.ctx.restore()
+      g.ctx.strokeStyle = "rgba(255, 255, 255, 1)";
+      for (let e of getByComponent ('draw')) {
+        if (e.drawType === 'ball' && e.region === region) {
+          g.ctx.beginPath();
+          g.ctx.arc(e.x, e.y, e.radius, 0, 2 * Math.PI);
+          g.ctx.stroke();
         }
       }
-    }
 
+      g.ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+      for (let e of getByComponent ('draw')) {
+        if (e.drawType === 'block' && e.region === region) {
+          g.ctx.fillRect(e.x + e.bx1, e.y + e.by1, e.bx2 - e.bx1, e.by2 - e.by1);
+        }
+      }
+
+      g.ctx.strokeStyle = "rgba(255, 255, 255, 0.5)";
+      for (let e of getByComponent ('draw')) {
+        if (e.drawType === 'block_s' && e.region === region) {
+          g.ctx.strokeRect(e.x + e.bx1, e.y + e.by1, e.bx2 - e.bx1, e.by2 - e.by1);
+
+        }
+      }
+
+      g.ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+      for (let e of getByComponent ('draw')) {
+        if (e.drawType === 'text' && e.region === region) {
+          g.ctx.font = e.textFont
+          g.ctx.textBaseline = "middle"
+          g.ctx.textAlign = "center"
+          g.ctx.fillText(e.text, e.x, e.y);
+        }
+      }
+
+      g.ctx.restore()
+    }
 
     // g.ctx.font = "30px Arial";
     // g.ctx.strokeText((s * 1000).toFixed(2) + "ms", 10, 50);

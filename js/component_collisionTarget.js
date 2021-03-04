@@ -1,6 +1,9 @@
+// Things that hit other
 components.collisionTarget = (e) => {
   // ct -> collisionTarget
   e.ct = true
+  e.ct_zone = 'world'
+
   e.ctCollided = false
   e.ctHitOn = null
 

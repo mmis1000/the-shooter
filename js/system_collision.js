@@ -7,7 +7,7 @@ systems.push({
 
       for (let t of getByComponent('collisionSource')) {
         let collideOnThis = false
-        if (e.region !== t.region) {
+        if (e.region !== t.region || e.ct_zone !== t.cs_zone) {
           continue;
         }
 
