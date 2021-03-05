@@ -56,10 +56,10 @@ setup((g) => {
     addComponent(e, 'draw')
     e.drawType = 'block_s'
 
-    e.bx1 = 0
-    e.bx2 = g.regions['stage_dec'].width
-    e.by1 = 0
-    e.by2 = g.regions['stage_dec'].height
+    e.bx1 = 1
+    e.bx2 = g.regions['stage_dec'].width - 1
+    e.by1 = 1
+    e.by2 = g.regions['stage_dec'].height - 1
   }
 
   function startGame() {

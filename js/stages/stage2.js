@@ -416,7 +416,7 @@ let stage2
         }
       }
 
-      if (e.age % (e._.interval * 5) === 0) {
+      if (e.health < (hpMax / 2) && e.age % (e._.interval * 5) === 0) {
         const count = 80
         for (let i = 0; i < count; i++) {
           project(
