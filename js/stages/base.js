@@ -1,3 +1,4 @@
+/// <reference path="../index.js" />
 // @ts-check
 
 const base = (() => {
@@ -111,66 +112,6 @@ const base = (() => {
     e.textFont = Math.floor(Math.min(60, g.regions[e.region].width / 15)) + 'px Arial'
   }
 
-  function spawnHealthBar() {
-    const height = 20
-
-    function update(e, g) {
-      e.x = g.regions[e.region].width / 2
-      e.y = g.regions[e.region].height * 0.1 + height / 2
-
-      const length = g.regions[e.region].width / 3
-
-      e.bx1 = -length / 2
-
-      e.bx2 = -length / 2 + length * Math.max(g.boss.health / g.boss._.hpMax * 2 - 1, 0)
-      e.by1 = -height / 4
-      e.by2 = height / 4
-    }
-
-    function update1(e, g) {
-      e.x = g.regions[e.region].width / 2
-      e.y = g.regions[e.region].height * 0.1
-
-      const length = g.regions[e.region].width / 3
-
-      e.bx1 = -length / 2
-
-      e.bx2 = -length / 2 + length * Math.max(Math.min(g.boss.health / g.boss._.hpMax * 2, 1), 0)
-      e.by1 = -height / 4
-      e.by2 = height / 4
-    }
-    {
-      // hp bar 1
-      const e = g.healthBar = addEntity()
-
-      addComponent(e, 'pos')
-      e.region = 'stage'
-
-      addComponent(e, 'draw')
-      e.drawType = 'block'
-
-      addComponent(e, 'event')
-      e.cb = update
-
-      update(e, g)
-    }
-    {
-      // hp bar 2
-      const e = g.healthBar = addEntity()
-
-      addComponent(e, 'pos')
-      e.region = 'stage'
-
-      addComponent(e, 'draw')
-      e.drawType = 'block'
-
-      addComponent(e, 'event')
-      e.cb = update1
-
-      update(e, g)
-    }
-  }
-
   function spawnHomeScreen(text, text2, startHandler) {
     exitTouchMouseMode(g);
 
@@ -262,7 +203,6 @@ const base = (() => {
   return {
     spawnPlayer,
     spawnHomeScreen,
-    spawnHealthBar,
     spawnScore,
     projectileDestroyCb,
     clear

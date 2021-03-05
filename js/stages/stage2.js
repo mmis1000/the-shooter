@@ -17,19 +17,79 @@ let stage2
       e.cb = (e, g, s) => {
         const time = e.age
 
-        if (actions_2[time]) {
-          e._.currentCb = actions_2[time]
+        if (actions[time]) {
+          e._.currentCb = actions[time]
         }
         e._.currentCb(e, g, s)
       }
 
-      e._.currentCb = actions_2[0]
+      e._.currentCb = actions[0]
     }
     spawnDirector()
   }
 
   const g = globals;
   const b = base
+
+  function spawnHealthBar() {
+    const height = 20
+
+    function update(e, g) {
+      e.x = g.regions[e.region].width / 2
+      e.y = g.regions[e.region].height * 0.1 + height / 2
+
+      const length = g.regions[e.region].width / 3
+
+      e.bx1 = -length / 2
+
+      e.bx2 = -length / 2 + length * Math.max(g.boss.health / g.boss._.hpMax * 2 - 1, 0)
+      e.by1 = -height / 4
+      e.by2 = height / 4
+    }
+
+    function update1(e, g) {
+      e.x = g.regions[e.region].width / 2
+      e.y = g.regions[e.region].height * 0.1
+
+      const length = g.regions[e.region].width / 3
+
+      e.bx1 = -length / 2
+
+      e.bx2 = -length / 2 + length * Math.max(Math.min(g.boss.health / g.boss._.hpMax * 2, 1), 0)
+      e.by1 = -height / 4
+      e.by2 = height / 4
+    }
+    {
+      // hp bar 1
+      const e = g.healthBar = addEntity()
+
+      addComponent(e, 'pos')
+      e.region = 'stage'
+
+      addComponent(e, 'draw')
+      e.drawType = 'block'
+
+      addComponent(e, 'event')
+      e.cb = update
+
+      update(e, g)
+    }
+    {
+      // hp bar 2
+      const e = g.healthBar = addEntity()
+
+      addComponent(e, 'pos')
+      e.region = 'stage'
+
+      addComponent(e, 'draw')
+      e.drawType = 'block'
+
+      addComponent(e, 'event')
+      e.cb = update1
+
+      update(e, g)
+    }
+  }
 
   // Attacks player
   const project = (x, y, arc, distance = 100, base = 100, bulletRadius = 10) => {
@@ -172,7 +232,7 @@ let stage2
           e.y,
           Math.PI / 2 + Math.cos(Math.PI * e.age / e._.interval) * Math.PI / 10,
           0,
-          100,
+          200,
           e._.bulletRadius
         )
       }
@@ -250,6 +310,8 @@ let stage2
   }
 
   const spawnBoss = () => {
+    const hpMax = 200
+
     // spawner
     const e = g.boss = addEntity()
 
@@ -276,7 +338,7 @@ let stage2
 
     addComponent(e, 'health')
     e.health_zone = 'enemy'
-    e._.hpMax = e.health = 50
+    e._.hpMax = e.health = hpMax
 
     e.health_cb = (e, g, s) => {
       if (e.health <= 0) {
@@ -322,14 +384,28 @@ let stage2
       }
 
       if (e.age % e._.interval === 0) {
-        const count = e.health < 25 ? 12 : 8
+        const count = e.health < (hpMax / 2) ? 12 : 8
         for (let i = 0; i < count; i++) {
           project(
             e.x,
             e.y,
-            Math.PI * 2 / count * (i + e.health / (120 + Math.PI)),
+            Math.PI * 2 / count * (i + e.age / (120 + Math.PI)),
             100,
-            e.health < 25 ? 150 : 100
+            e.health < (hpMax / 2) ? 150 : 100
+          )
+        }
+      }
+
+      if (e.age % (e._.interval * 5) === 0) {
+        const count = 80
+        for (let i = 0; i < count; i++) {
+          project(
+            e.x,
+            e.y,
+            Math.PI * 2 / count * i,
+            100,
+            20,
+            4
           )
         }
       }
@@ -337,12 +413,12 @@ let stage2
 
   }
 
-  const actions_2 = {
+  const actions = {
     [0] (e, g, s) {
       const time = e.age
 
-      // every .5 second
-      if (time % 60 === 0) {
+      // every .75 second
+      if (time % 90 === 0) {
         spawnSmall({
           x: 0,
           xCb(e, g, s) {
@@ -401,7 +477,7 @@ let stage2
     [60 * 10] (e, g, s) {
       const time = e.age
 
-      if (time % 30 === 0) {
+      if (time % 120 === 0) {
         spawnSmall({
           x: 0,
           xCb(e, g, s) {
@@ -410,7 +486,7 @@ let stage2
           },
           hp: 2,
           cb: swappingBulletCb,
-          interval: 20
+          interval: 5
         })
       }
     },
@@ -418,7 +494,7 @@ let stage2
     },
     [60 * 25] (e, g, s) {
       spawnBoss()
-      b.spawnHealthBar()
+      spawnHealthBar()
     },
     [60 * 25 + 1] (e, g, s) {}
   }

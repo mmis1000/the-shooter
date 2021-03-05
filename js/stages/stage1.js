@@ -17,19 +17,79 @@ let stage1
       e.cb = (e, g, s) => {
         const time = e.age
 
-        if (actions_1[time]) {
-          e._.currentCb = actions_1[time]
+        if (actions[time]) {
+          e._.currentCb = actions[time]
         }
         e._.currentCb(e, g, s)
       }
 
-      e._.currentCb = actions_1[0]
+      e._.currentCb = actions[0]
     }
     spawnDirector()
   }
 
   const g = globals;
   const b = base
+
+  function spawnHealthBar() {
+    const height = 20
+
+    function update(e, g) {
+      e.x = g.regions[e.region].width / 2
+      e.y = g.regions[e.region].height * 0.1 + height / 2
+
+      const length = g.regions[e.region].width / 3
+
+      e.bx1 = -length / 2
+
+      e.bx2 = -length / 2 + length * Math.max(g.boss.health / g.boss._.hpMax * 2 - 1, 0)
+      e.by1 = -height / 4
+      e.by2 = height / 4
+    }
+
+    function update1(e, g) {
+      e.x = g.regions[e.region].width / 2
+      e.y = g.regions[e.region].height * 0.1
+
+      const length = g.regions[e.region].width / 3
+
+      e.bx1 = -length / 2
+
+      e.bx2 = -length / 2 + length * Math.max(Math.min(g.boss.health / g.boss._.hpMax * 2, 1), 0)
+      e.by1 = -height / 4
+      e.by2 = height / 4
+    }
+    {
+      // hp bar 1
+      const e = g.healthBar = addEntity()
+
+      addComponent(e, 'pos')
+      e.region = 'stage'
+
+      addComponent(e, 'draw')
+      e.drawType = 'block'
+
+      addComponent(e, 'event')
+      e.cb = update
+
+      update(e, g)
+    }
+    {
+      // hp bar 2
+      const e = g.healthBar = addEntity()
+
+      addComponent(e, 'pos')
+      e.region = 'stage'
+
+      addComponent(e, 'draw')
+      e.drawType = 'block'
+
+      addComponent(e, 'event')
+      e.cb = update1
+
+      update(e, g)
+    }
+  }
 
   // Attacks player
   const project = (x, y, arc, distance = 100, base = 100, bulletRadius = 10) => {
@@ -329,7 +389,7 @@ let stage1
           project(
             e.x,
             e.y,
-            Math.PI * 2 / count * (i + e.health / (120 + Math.PI)),
+            Math.PI * 2 / count * (i + e.age / (120 + Math.PI)),
             100,
             e.health < 25 ? 150 : 100
           )
@@ -339,7 +399,7 @@ let stage1
 
   }
 
-  const actions_1 = {
+  const actions = {
     [0] (e, g, s) {
       const time = e.age
 
@@ -420,7 +480,7 @@ let stage1
     },
     [60 * 25] (e, g, s) {
       spawnBoss()
-      b.spawnHealthBar()
+      spawnHealthBar()
     },
     [60 * 25 + 1] (e, g, s) {}
   }
