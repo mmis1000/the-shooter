@@ -60,6 +60,26 @@ let stage2
       e.by2 = height / 4
     }
     {
+      // hp bar rect
+      const e = g.healthBar = addEntity()
+
+      addComponent(e, 'pos')
+      e.region = 'stage'
+
+      addComponent(e, 'draw')
+      e.drawType = 'block_s'
+
+      e.x = g.regions[e.region].width / 2
+      e.y = g.regions[e.region].height * 0.1 + height / 4
+
+      const length = g.regions[e.region].width / 3
+
+      e.bx1 = -length / 2 - 4
+      e.bx2 = length / 2 + 4
+      e.by1 = -height / 2 - 4
+      e.by2 = height / 2 + 4
+    }
+    {
       // hp bar 1
       const e = g.healthBar = addEntity()
 
