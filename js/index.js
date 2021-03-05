@@ -56,10 +56,10 @@ setup((g) => {
     addComponent(e, 'draw')
     e.drawType = 'block_s'
 
-    e.bx1 = 1
-    e.bx2 = g.regions['stage_dec'].width - 1
-    e.by1 = 1
-    e.by2 = g.regions['stage_dec'].height - 1
+    e.bx1 = Math.max(1 / g.regions['stage_dec'].scale, 1)
+    e.bx2 = g.regions['stage_dec'].width - Math.max(1 / g.regions['stage_dec'].scale, 1)
+    e.by1 = Math.max(1 / g.regions['stage_dec'].scale, 1)
+    e.by2 = g.regions['stage_dec'].height - Math.max(1 / g.regions['stage_dec'].scale, 1)
   }
 
   function startGame() {

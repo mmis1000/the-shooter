@@ -119,6 +119,10 @@ systems.push({
       g.ctx.scale(g.regions[region].scale, g.regions[region].scale)
       clipRect(g.ctx, g.regions[region].width, g.regions[region].height)
 
+      const lineWidth = Math.max(1 / g.regions[region].scale, 1)
+
+      g.ctx.lineWidth = lineWidth
+
       g.ctx.strokeStyle = "rgba(255, 255, 255, 1)";
       for (let e of getByComponent ('draw')) {
         if (e.drawType === 'ball' && e.region === region) {
