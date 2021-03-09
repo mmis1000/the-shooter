@@ -3,7 +3,6 @@
 /// <reference path="./system_regions.js" />
 /// <reference path="./stages/stage1.js" />
 /// <reference path="./stages/base.js" />
-// @ts-check
 init()
 
 setup((g) => {

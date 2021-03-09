@@ -1,31 +1,3 @@
-
-
-//
-// creates a shader of the given type, uploads the source and
-// compiles it.
-//
-function loadShader(gl, type, source) {
-  const shader = gl.createShader(type);
-
-  // Send the source to the shader object
-
-  gl.shaderSource(shader, source);
-
-  // Compile the shader program
-
-  gl.compileShader(shader);
-
-  // See if it compiled successfully
-
-  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-    alert('An error occurred compiling the shaders: ' + gl.getShaderInfoLog(shader));
-    gl.deleteShader(shader);
-    return null;
-  }
-
-  return shader;
-}
-
 /**
  * @type { (name: string, size: number) => Uint16Array }
  */
@@ -62,6 +34,33 @@ let allocFloat32
    */
   const buffers = new Map()
 }
+
+//
+// creates a shader of the given type, uploads the source and
+// compiles it.
+//
+function loadShader(gl, type, source) {
+  const shader = gl.createShader(type);
+
+  // Send the source to the shader object
+
+  gl.shaderSource(shader, source);
+
+  // Compile the shader program
+
+  gl.compileShader(shader);
+
+  // See if it compiled successfully
+
+  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+    alert('An error occurred compiling the shaders: ' + gl.getShaderInfoLog(shader));
+    gl.deleteShader(shader);
+    return null;
+  }
+
+  return shader;
+}
+
 function initShaderProgram(gl, vsSource, fsSource) {
   const vertexShader = loadShader(gl, gl.VERTEX_SHADER, vsSource);
   const fragmentShader = loadShader(gl, gl.FRAGMENT_SHADER, fsSource);
@@ -79,17 +78,168 @@ function initShaderProgram(gl, vsSource, fsSource) {
   return shaderProgram;
 }
 
+/**
+ * @typedef {{
+  *   font: string,
+  *   fillStyle: string,
+  *   textBaseline: string,
+  *   textAlign: string,
+  *   text: string
+  * }} TextureRequest
+  */
+/**
+ * @typedef {{
+ *   x: number,
+ *   y: number,
+ *   xOrigin: number,
+ *   yOrigin: number,
+ *   width: number,
+ *   height: number,
+ * }} StitchedTexturePart
+ */
+/**
+ * @typedef {{
+ *   age: 0,
+ *   cacheKey: string,
+ *   canvas: HTMLCanvasElement,
+ *   width: number,
+ *   height: number,
+ *   positions: {
+ *     [key: string]: StitchedTexturePart
+ *   }
+ * }} StitchedTexture
+ */
+
+const MAX_TEXTURE_AGE = 60;
+const PADDING = 4;
+/**
+ * @type { Map<string, StitchedTexture }
+ */
+const cachedTextures = new Map()
+
+/**
+ * @param { WebGLRenderingContext } gl
+ * @param { WebGLTexture } texture
+ * @param { string } key
+ * @param {{ [key: string]: TextureRequest }} requests
+ */
+function generateTexture(gl, texture, key, requests) {
+  const level = 0;
+  const internalFormat = gl.RGBA;
+  const srcFormat = gl.RGBA;
+  const srcType = gl.UNSIGNED_BYTE;
+
+  const requestList = Object.entries(requests)
+  requestList.sort((a, b) => a[0] > b[0] ? 1 : -1)
+
+  const cacheKey = JSON.stringify(requestList)
+
+  const cache = cachedTextures.get(key)
+
+  if (cache && cache.cacheKey === cacheKey) {
+    cache.age = 0;
+
+    // Assume not change
+
+    // gl.bindTexture(gl.TEXTURE_2D, texture);
+    // gl.texImage2D(gl.TEXTURE_2D, level, internalFormat, srcFormat, srcType, cache.canvas);
+    // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+
+    return cache
+  }
+
+  // reuse it
+  const canvas = cache ? cache.canvas : document.createElement('canvas')
+  const ctx = canvas.getContext('2d')
+
+  let height = 0
+  let width = 0
+
+  const dimensions = requestList.map(r => {
+    const info = r[1]
+    ctx.font = info.font
+    ctx.textBaseline = info.textBaseline
+    ctx.textAlign = info.textAlign
+    const size = ctx.measureText(info.text)
+    /**
+     * @type {StitchedTexturePart & { key: string, info: TextureRequest }}
+     */
+    const res = {
+      x: 0,
+      y: height,
+      xOrigin: 0 - (-size.actualBoundingBoxLeft),
+      yOrigin: height + (0 - (-size.actualBoundingBoxAscent)),
+      width: size.actualBoundingBoxRight - (-size.actualBoundingBoxLeft),
+      height: size.actualBoundingBoxDescent - (-size.actualBoundingBoxAscent),
+      key: r[0],
+      info
+    }
+
+    width = Math.max(width, res.width)
+    height += size.actualBoundingBoxDescent - (-size.actualBoundingBoxAscent)
+
+    height += PADDING
+    return res
+  })
+
+  canvas.width = Math.ceil(width)
+  canvas.height = Math.ceil(height)
+
+  ctx.clearRect(0, 0, width, height)
+
+  for (const d of dimensions) {
+    ctx.textAlign = d.info.textAlign
+    ctx.textBaseline = d.info.textBaseline
+    ctx.font = d.info.font
+    ctx.fillStyle = d.info.fillStyle
+    ctx.fillText(d.info.text, d.xOrigin, d.yOrigin)
+  }
+
+  gl.bindTexture(gl.TEXTURE_2D, texture);
+  gl.texImage2D(gl.TEXTURE_2D, level, internalFormat, srcFormat, srcType, canvas);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+
+  for (const [key, item] of cachedTextures) {
+    item.age++
+    if (item.age > MAX_TEXTURE_AGE) {
+      cachedTextures.delete(key)
+    }
+  }
+
+  /**
+   * @type {StitchedTexture}
+   */
+  const res = {
+    age: 0,
+    cacheKey,
+    canvas,
+    width,
+    height,
+    positions: {}
+  }
+
+  for (const d of dimensions) {
+    res.positions[d.key] = d
+  }
+
+  cachedTextures.set(key, res)
+
+  return res
+}
+
 const TYPE_SQUARE = 1
 const TYPE_HOLLOW_SQUARE = 2
 const TYPE_CIRCLE = 3
 const TYPE_HOLLOW_CIRCLE = 4
+const TYPE_IMG = 5
 
 systems.push({
   name: 'render',
   dependsOn: ['regions'],
-  /**
-   * @param {{ ctx: CanvasRenderingContext2D }} g
-   */
   init(g) {
     // global resize callback
     g.resizeCb = nuzz
@@ -99,7 +249,7 @@ systems.push({
     g.canvas = document.getElementById('canvas')
 
     /**
-     * @type { WebGL2RenderingContext }
+     * @type { WebGLRenderingContext }
      */
     const gl = g.gl = g.canvas.getContext("webgl");
 
@@ -212,6 +362,8 @@ systems.push({
           varying vec2 fThreshold;
           varying vec2 fOffset;
 
+          uniform sampler2D uSampler;
+
           void main() {
             if (fType == ${TYPE_SQUARE}.0) {
               // gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
@@ -229,7 +381,9 @@ systems.push({
               gl_FragColor = length(fOffset) < fThreshold.x && length(fOffset) > fThreshold.y
                 ? fColor
                 : vec4(0.0, 0.0, 0.0, 0.0);
-            }  else {
+            } else if (fType == ${TYPE_IMG}.0) {
+              gl_FragColor = texture2D(uSampler, fOffset);
+            } else {
               gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
             }
           }
@@ -243,7 +397,8 @@ systems.push({
         aVertexThreshold: gl.getAttribLocation(current.program, 'aVertexThreshold'),
         aVertexOffset: gl.getAttribLocation(current.program, 'aVertexOffset'),
         uProjectionMatrix: gl.getUniformLocation(current.program, 'uProjectionMatrix'),
-        uModelViewMatrix: gl.getUniformLocation(current.program, 'uModelViewMatrix')
+        uModelViewMatrix: gl.getUniformLocation(current.program, 'uModelViewMatrix'),
+        uSampler: gl.getUniformLocation(current.program, 'uSampler'),
       }
 
       current.buffers = {
@@ -252,7 +407,8 @@ systems.push({
         aVertexColor: gl.createBuffer(),
         aVertexType: gl.createBuffer(),
         aVertexThreshold: gl.createBuffer(),
-        aVertexOffset: gl.createBuffer()
+        aVertexOffset: gl.createBuffer(),
+        tText: gl.createTexture()
       }
     }
 
@@ -282,7 +438,7 @@ systems.push({
     })
   },
   /**
-   * @param {{ ctx: CanvasRenderingContext2D, regions: Record<string, { top: number, left: number, width: number, height: number, scale: number} }} g
+   * @param {{ regions: Record<string, { top: number, left: number, width: number, height: number, scale: number} }} g
    */
   tick(s, g) {
     const correctPosition = (e, g) => {
@@ -302,7 +458,7 @@ systems.push({
     // background
     {
       /**
-       * @type { WebGL2RenderingContext }
+       * @type { WebGLRenderingContext }
        */
       const gl = g.gl
       const current = g.programs.background
@@ -362,8 +518,8 @@ systems.push({
         );
       }
       const colors = new Float32Array([
-        1, 0, 1,
-        1, 0, 1,
+        0, 0, 1 / 3,
+        0, 0, 1 / 3,
         0, 0, 0,
         0, 0, 0,
       ])
@@ -436,6 +592,12 @@ systems.push({
     }
 
     for (const region in g.regions) {
+      /**
+       * @type { WebGLRenderingContext }
+       */
+      const gl = g.gl
+      const currentRegion = g.regions[region]
+      const current = g.programs.objects
 
       const lineWidth = region.scale < 1 ? (1 / region.scale + 1) : 2
 
@@ -587,22 +749,76 @@ systems.push({
         }
       }
 
+      /**
+       * @type {{ [key: string]: TextureRequest }
+       */
+      const requests = {}
+
       for (let e of getByComponent('draw')) {
         if (e.drawType === 'text' && e.region === region) {
+          requests[e.id] = {
+            fillStyle: "rgba(255, 255, 255, 0.5)",
+            text: e.text,
+            textBaseline: "middle",
+            textAlign: "center",
+            font: e.textFont
+          }
+        }
+      }
+
+      if (Object.keys(requests).length > 0) {
+        const res = generateTexture(gl, current.buffers.tText, region, requests)
+
+        for (let e of getByComponent('draw')) {
+          if (e.drawType === 'text' && e.region === region) {
+            const i = total++;
+
+            const textureData = res.positions[e.id]
+
+            const width = textureData.width
+            const height = textureData.height
+            const x = e.x - textureData.xOrigin
+            const y = e.y - textureData.yOrigin
+
+
+            aVertexColor.set([
+              1, 1, 1, 0.5,
+              1, 1, 1, 0.5,
+              1, 1, 1, 0.5,
+              1, 1, 1, 0.5,
+            ], i * 4 * 4)
+            aVertexPosition.set([
+              x, y,
+              x + width, y,
+              x, y + height,
+              x + width, y + height,
+            ], i * 2 * 4)
+            aVertexType.set([
+              TYPE_IMG,
+              TYPE_IMG,
+              TYPE_IMG,
+              TYPE_IMG,
+            ], i * 1 * 4)
+            // not used
+            aVertexThreshold.set([
+              0, 0,
+              0, 0,
+              0, 0,
+              0, 0,
+            ], i * 2 * 4)
+            aVertexOffset.set([
+              textureData.x / res.width                      , textureData.y / res.height,
+              (textureData.x + textureData.width) / res.width, textureData.y / res.height,
+              textureData.x / res.width                      , (textureData.y + textureData.height) / res.height,
+              (textureData.x + textureData.width) / res.width, (textureData.y + textureData.height) / res.height,
+            ], i * 2 * 4)
+          }
         }
       }
 
       if (total === 0) {
         continue
       }
-
-      const currentRegion = g.regions[region]
-
-      /**
-       * @type { WebGL2RenderingContext }
-       */
-      const gl = g.gl
-      const current = g.programs.objects
 
       const setVertex = (name, numComponents, buffer, length) => {
         const type = gl.FLOAT;    // the data in the buffer is 32bit floats

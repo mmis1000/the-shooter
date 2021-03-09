@@ -6,5 +6,10 @@
         "activityBar.background": "#29301E",
         "titleBar.activeBackground": "#39432A",
         "titleBar.activeForeground": "#FBFCFA"
-    }
+    },
+    "cSpell.words": [
+        "mediump",
+        "msaa",
+        "nuzz"
+    ]
 }

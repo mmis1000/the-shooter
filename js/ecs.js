@@ -13,8 +13,11 @@ const nuzz = () => {}
 const components = {
 }
 
+let id = 0;
+
 function addEntity () {
   const e = {
+    id: id++,
     age: 0,
     destroyed: false
   }

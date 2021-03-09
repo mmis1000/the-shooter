@@ -1,6 +1,5 @@
 /// <reference path="../index.js" />
 /// <reference path="./base.js" />
-// @ts-check
 let stage1
 {
   const nextLevelFn = (...args) => stage2(...args);

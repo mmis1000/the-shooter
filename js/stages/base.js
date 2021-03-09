@@ -1,5 +1,4 @@
 /// <reference path="../index.js" />
-// @ts-check
 
 const base = (() => {
   const g = globals;
