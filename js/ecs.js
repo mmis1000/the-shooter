@@ -63,9 +63,9 @@ const systems = [
 // ticker
 
 const tps = 60
-const diff = 1 / tps
+const diff = 1000 / tps
 let prev = Date.now()
-const minNext = 1 / tps / 5
+const minNext = 1000 / tps / 5
 
 function tick () {
   const untilNext = Math.max((prev + diff) - Date.now(), minNext)
@@ -75,7 +75,7 @@ function tick () {
 
   for (let sys of systems) {
     if (sys.tick) {
-      sys.tick(diff, globals)
+      sys.tick(diff / 1000, globals)
     }
   }
 

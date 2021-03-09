@@ -221,17 +221,14 @@ let stage1
     if (b.projectileDestroyCb(e, g, s)) return
 
     if (e.age % e._.interval === 0) {
-      const count = 3
-      for (let i = 0; i < count; i++) {
-        project2(
-          e.x,
-          e.y,
-          Math.PI / 2 + Math.cos(Math.PI * e.age / e._.interval / 10) * Math.PI / 4,
-          0,
-          200,
-          e._.bulletRadius
-        )
-      }
+      project2(
+        e.x,
+        e.y,
+        Math.PI / 2 + Math.cos(Math.PI * e.age / e._.interval / 10) * Math.PI / 4,
+        0,
+        200,
+        e._.bulletRadius
+      )
     }
   }
 
@@ -496,8 +493,7 @@ let stage1
         })
       }
     },
-    [60 * 20] (e, g, s) {
-    },
+    [60 * 20] (e, g, s) {},
     [60 * 25] (e, g, s) {
       spawnBoss()
       spawnHealthBar()
