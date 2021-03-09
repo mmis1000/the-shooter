@@ -26,6 +26,42 @@ function loadShader(gl, type, source) {
   return shader;
 }
 
+/**
+ * @type { (name: string, size: number) => Uint16Array }
+ */
+let allocUint16
+/**
+ * @type { (name: string, size: number) => Float32Array }
+ */
+let allocFloat32
+{
+  allocUint16 = (name, size) => {
+    const current = buffers.get(name)
+    if (current && size * 2 <= current.byteLength ) {
+      return new Uint16Array(current, 0, size)
+    } else {
+      const byteLength = 2 ** (Math.ceil(Math.log2(size * 2)) + 1)
+      const newBuffer = new ArrayBuffer(byteLength)
+      buffers.set(name, newBuffer)
+      return new Uint16Array(newBuffer, 0, size)
+    }
+  }
+  allocFloat32 = (name, size) => {
+    const current = buffers.get(name)
+    if (current && size * 4 <= current.byteLength ) {
+      return new Float32Array(current, 0, size)
+    } else {
+      const byteLength = 2 ** (Math.ceil(Math.log2(size * 4)) + 1)
+      const newBuffer = new ArrayBuffer(byteLength)
+      buffers.set(name, newBuffer)
+      return new Float32Array(newBuffer, 0, size)
+    }
+  }
+  /**
+   * @type { Map<string, ArrayBuffer> }
+   */
+  const buffers = new Map()
+}
 function initShaderProgram(gl, vsSource, fsSource) {
   const vertexShader = loadShader(gl, gl.VERTEX_SHADER, vsSource);
   const fragmentShader = loadShader(gl, gl.FRAGMENT_SHADER, fsSource);
@@ -378,12 +414,12 @@ systems.push({
 
     const totalVertex = getByComponent('draw').size * 4;
 
-    const eIndex = new Uint16Array(totalVertex / 2 * 3)
-    const aVertexColor = new Float32Array(totalVertex * 4)
-    const aVertexPosition = new Float32Array(totalVertex * 2)
-    const aVertexType = new Float32Array(totalVertex * 1)
-    const aVertexThreshold = new Float32Array(totalVertex * 2)
-    const aVertexOffset = new Float32Array(totalVertex * 2)
+    const eIndex = allocUint16('eIndex', totalVertex / 2 * 3)
+    const aVertexColor = allocFloat32('aVertexColor', totalVertex * 4)
+    const aVertexPosition = allocFloat32('aVertexPosition', totalVertex * 2)
+    const aVertexType = allocFloat32('aVertexType', totalVertex * 1)
+    const aVertexThreshold = allocFloat32('aVertexThreshold', totalVertex * 2)
+    const aVertexOffset = allocFloat32('aVertexOffset', totalVertex * 2)
 
     for (let i = 0; i < totalVertex / 4; i++) {
       eIndex[i * 6 + 0] = i * 4 + 0
@@ -611,7 +647,6 @@ systems.push({
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,
           new Uint16Array(eIndex.buffer, 0, total * 6), gl.STATIC_DRAW);
       }
-
 
       {
         const vertexCount = total * 6;
