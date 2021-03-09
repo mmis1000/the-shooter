@@ -289,7 +289,7 @@ let stage2
     e.region = 'stage'
 
     addComponent(e, 'draw')
-    e.drawType = 'ball'
+    e.drawType = 'ball_s'
     e.radius = radius
 
     addComponent(e, 'collisionTarget')
@@ -338,7 +338,7 @@ let stage2
     e.region = 'stage'
 
     addComponent(e, 'draw')
-    e.drawType = 'ball'
+    e.drawType = 'ball_s'
     e.radius = 100
 
     addComponent(e, 'collisionTarget')

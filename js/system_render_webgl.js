@@ -82,6 +82,7 @@ function initShaderProgram(gl, vsSource, fsSource) {
 const TYPE_SQUARE = 1
 const TYPE_HOLLOW_SQUARE = 2
 const TYPE_CIRCLE = 3
+const TYPE_HOLLOW_CIRCLE = 4
 
 systems.push({
   name: 'render',
@@ -222,6 +223,10 @@ systems.push({
                 : vec4(0.0, 0.0, 0.0, 0.0);
             } else if (fType == ${TYPE_CIRCLE}.0) {
               gl_FragColor = length(fOffset) < fThreshold.x
+                ? fColor
+                : vec4(0.0, 0.0, 0.0, 0.0);
+            } else if (fType == ${TYPE_HOLLOW_CIRCLE}.0) {
+              gl_FragColor = length(fOffset) < fThreshold.x && length(fOffset) > fThreshold.y
                 ? fColor
                 : vec4(0.0, 0.0, 0.0, 0.0);
             }  else {
@@ -432,7 +437,7 @@ systems.push({
 
     for (const region in g.regions) {
 
-      const lineWidth = region.scale < 1 ? (1 / region.scale) : 1
+      const lineWidth = region.scale < 1 ? (1 / region.scale + 1) : 2
 
       let total = 0
       for (let e of getByComponent('draw')) {
@@ -461,6 +466,42 @@ systems.push({
             1, 0,
             1, 0,
             1, 0,
+          ], i * 2 * 4)
+          aVertexOffset.set([
+            -1, -1,
+            1, -1,
+            -1, 1,
+            1, 1,
+          ], i * 2 * 4)
+        }
+      }
+      for (let e of getByComponent('draw')) {
+        if (e.drawType === 'ball_s' && e.region === region) {
+          const i = total++;
+          aVertexColor.set([
+            1, 1, 1, 0.5,
+            1, 1, 1, 0.5,
+            1, 1, 1, 0.5,
+            1, 1, 1, 0.5,
+          ], i * 4 * 4)
+          aVertexPosition.set([
+            e.x - e.radius, e.y - e.radius,
+            e.x + e.radius, e.y - e.radius,
+            e.x - e.radius, e.y + e.radius,
+            e.x + e.radius, e.y + e.radius,
+          ], i * 2 * 4)
+          aVertexType.set([
+            TYPE_HOLLOW_CIRCLE,
+            TYPE_HOLLOW_CIRCLE,
+            TYPE_HOLLOW_CIRCLE,
+            TYPE_HOLLOW_CIRCLE,
+          ], i * 1 * 4)
+          const percent = (e.radius - lineWidth) / e.radius;
+          aVertexThreshold.set([
+            1, percent,
+            1, percent,
+            1, percent,
+            1, percent,
           ], i * 2 * 4)
           aVertexOffset.set([
             -1, -1,
@@ -591,10 +632,10 @@ systems.push({
       }
 
       gl.viewport(
-        currentRegion.left,
-        currentRegion.top,
-        currentRegion.width * currentRegion.scale,
-        currentRegion.height * currentRegion.scale
+        currentRegion.left * g.dpi,
+        currentRegion.top * g.dpi,
+        currentRegion.width * currentRegion.scale * g.dpi,
+        currentRegion.height * currentRegion.scale * g.dpi
       )
 
       gl.enable(gl.BLEND)
@@ -602,10 +643,10 @@ systems.push({
 
       gl.blendFunc( gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA );
       gl.scissor(
-        currentRegion.left,
-        currentRegion.top,
-        currentRegion.width * currentRegion.scale,
-        currentRegion.height * currentRegion.scale
+        currentRegion.left * g.dpi,
+        currentRegion.top * g.dpi,
+        currentRegion.width * currentRegion.scale * g.dpi,
+        currentRegion.height * currentRegion.scale * g.dpi
       )
 
       const projectionMatrix = new Float32Array([

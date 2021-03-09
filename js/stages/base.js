@@ -52,7 +52,7 @@ const base = (() => {
     e.y = g.regions['stage'].height * 4 / 5
 
     addComponent(e, 'draw')
-    e.drawType = 'ball'
+    e.drawType = 'ball_s'
     e.radius = 10
 
 
