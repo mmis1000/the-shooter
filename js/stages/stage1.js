@@ -132,8 +132,10 @@ let stage1
     e.ay = vector.y * acc
 
     addComponent(e, 'draw')
-    e.drawType = 'ball'
+    e.drawType = 'ball_s'
     e.radius = bulletRadius
+    e.draw_g = 0.5
+    e.draw_a = 0.7
 
     addComponent(e, 'event')
     e.cb = b.projectileDestroyCb
@@ -172,6 +174,8 @@ let stage1
     addComponent(e, 'draw')
     e.drawType = 'ball'
     e.radius = bulletRadius
+    e.draw_g = 0.5
+    e.draw_b = 0.5
 
     addComponent(e, 'event')
     e.cb = b.projectileDestroyCb
@@ -241,17 +245,14 @@ let stage1
     if (b.projectileDestroyCb(e, g, s)) return
 
     if (e.age % e._.interval === 0) {
-      const count = 3
-      for (let i = 0; i < count; i++) {
-        project2(
-          e.x + (i - (count - 1) / 2) * 80,
-          e.y,
-          Math.PI / 2 + Math.cos(Math.PI * e.age / e._.interval) * Math.PI / 10,
-          0,
-          100,
-          e._.bulletRadius
-        )
-      }
+      project2(
+        e.x,
+        e.y,
+        Math.PI / 2,
+        0,
+        200,
+        e._.bulletRadius
+      )
     }
   }
 
@@ -297,6 +298,13 @@ let stage1
     d1.bx2 = radius / 1.414
     d1.by1 = -radius / 1.414
     d1.by2 = radius / 1.414
+    d1.draw_g = 0
+    d1.draw_b = 0
+    d1.draw_a = 1
+
+    const d2 = addComponent(e, 'draw')
+    d2.drawType = 'ball_s'
+    d2.radius = radius / 2
 
     addComponent(e, 'collisionTarget')
     e.ct_zone = 'player'
@@ -344,6 +352,9 @@ let stage1
     addComponent(e, 'draw')
     e.drawType = 'ball_s'
     e.radius = 100
+    e.draw_r = 0
+    e.draw_b = 0
+    e.draw_a = 0.9
 
     addComponent(e, 'collisionTarget')
     e.ct_zone = 'player'
@@ -448,16 +459,16 @@ let stage1
         })
       }
 
-      if (time % 120 === 0) {
+      if (time % 20 === 0) {
         spawnSmall({
           x: 0,
           xCb(e, g, s) {
-            return Math.cos(Math.PI * e.age / 30) * 75 - 200
+            return Math.cos(Math.PI * e.age / 90) * 75 - 200
           },
           cb: noBulletCb,
           hp: 4,
           interval: 20,
-          liveSpan: 60
+          liveSpan: 180
         })
 
         spawnSmall({
@@ -468,18 +479,18 @@ let stage1
           cb: noBulletCb,
           hp: 4,
           interval: 20,
-          liveSpan: 60
+          liveSpan: 180
         })
 
         spawnSmall({
           x: 0,
           xCb(e, g, s) {
-            return Math.cos(Math.PI * e.age / 30) * -75 + 200
+            return Math.cos(Math.PI * e.age / 90) * -75 + 200
           },
           cb: noBulletCb,
           hp: 4,
           interval: 20,
-          liveSpan: 60
+          liveSpan: 180
         })
       }
     },
@@ -491,7 +502,7 @@ let stage1
           x: 0,
           xCb(e, g, s) {
             return Math.cos(Math.PI * time / 60 / 2
-              + Math.PI * e.age / 60) * g.regions[e.region].width / 2.1
+              + Math.PI * e.age / 360) * g.regions[e.region].width / 2.1
           },
           hp: 2,
           cb: swappingBulletCb,

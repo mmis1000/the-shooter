@@ -707,7 +707,9 @@ systems.push({
       }
     }
 
-    const totalVertex = getByComponent('draw').size * 4;
+    let realSize = 0
+    getByComponent('draw').forEach((/** @type {{ draw_size: number; }} */ i) => realSize += i.draw_size)
+    const totalVertex = realSize * 4;
 
     /**
      * @type { Record<string, {
@@ -780,7 +782,7 @@ systems.push({
         do {
           if (d.drawType === 'text' && d.region === region) {
             requests[d.draw_id] = {
-              fillStyle: "rgba(255, 255, 255, 0.5)",
+              fillStyle: `rgba(${d.draw_r * 255}, ${d.draw_g * 255}, ${d.draw_b * 255}, ${d.draw_a})`,
               text: e.text,
               textBaseline: "middle",
               textAlign: "center",
@@ -810,10 +812,10 @@ systems.push({
                 const current = types.circle
                 const i = current.total++;
                 current.aVertexColor.set([
-                  1, 1, 1, 0.5,
-                  1, 1, 1, 0.5,
-                  1, 1, 1, 0.5,
-                  1, 1, 1, 0.5,
+                  d.draw_r, d.draw_g, d.draw_b, d.draw_a,
+                  d.draw_r, d.draw_g, d.draw_b, d.draw_a,
+                  d.draw_r, d.draw_g, d.draw_b, d.draw_a,
+                  d.draw_r, d.draw_g, d.draw_b, d.draw_a,
                 ], i * 4 * 4)
                 current.aVertexPosition.set([
                   e.x - d.radius, e.y - d.radius,
@@ -844,10 +846,10 @@ systems.push({
                 const current = types.circle_hollow
                 const i = current.total++;
                 current.aVertexColor.set([
-                  1, 1, 1, 0.5,
-                  1, 1, 1, 0.5,
-                  1, 1, 1, 0.5,
-                  1, 1, 1, 0.5,
+                  d.draw_r, d.draw_g, d.draw_b, d.draw_a,
+                  d.draw_r, d.draw_g, d.draw_b, d.draw_a,
+                  d.draw_r, d.draw_g, d.draw_b, d.draw_a,
+                  d.draw_r, d.draw_g, d.draw_b, d.draw_a,
                 ], i * 4 * 4)
                 current.aVertexPosition.set([
                   e.x - d.radius, e.y - d.radius,
@@ -879,10 +881,10 @@ systems.push({
                 const current = types.square
                 const i = current.total++;
                 current.aVertexColor.set([
-                  1, 1, 1, 0.5,
-                  1, 1, 1, 0.5,
-                  1, 1, 1, 0.5,
-                  1, 1, 1, 0.5,
+                  d.draw_r, d.draw_g, d.draw_b, d.draw_a,
+                  d.draw_r, d.draw_g, d.draw_b, d.draw_a,
+                  d.draw_r, d.draw_g, d.draw_b, d.draw_a,
+                  d.draw_r, d.draw_g, d.draw_b, d.draw_a,
                 ], i * 4 * 4)
                 current.aVertexPosition.set([
                   e.x + d.bx1, e.y + d.by1,
@@ -916,10 +918,10 @@ systems.push({
                 const height = Math.abs(d.by2 - d.by1)
 
                 current.aVertexColor.set([
-                  1, 1, 1, 0.5,
-                  1, 1, 1, 0.5,
-                  1, 1, 1, 0.5,
-                  1, 1, 1, 0.5,
+                  d.draw_r, d.draw_g, d.draw_b, d.draw_a,
+                  d.draw_r, d.draw_g, d.draw_b, d.draw_a,
+                  d.draw_r, d.draw_g, d.draw_b, d.draw_a,
+                  d.draw_r, d.draw_g, d.draw_b, d.draw_a,
                 ], i * 4 * 4)
                 current.aVertexPosition.set([
                   e.x + d.bx1, e.y + d.by1,
@@ -958,10 +960,10 @@ systems.push({
                 const y = e.y - textureData.yOrigin
 
                 current.aVertexColor.set([
-                  1, 1, 1, 0.5,
-                  1, 1, 1, 0.5,
-                  1, 1, 1, 0.5,
-                  1, 1, 1, 0.5,
+                  d.draw_r, d.draw_g, d.draw_b, d.draw_a,
+                  d.draw_r, d.draw_g, d.draw_b, d.draw_a,
+                  d.draw_r, d.draw_g, d.draw_b, d.draw_a,
+                  d.draw_r, d.draw_g, d.draw_b, d.draw_a,
                 ], i * 4 * 4)
                 current.aVertexPosition.set([
                   x, y,

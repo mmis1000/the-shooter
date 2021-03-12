@@ -26,6 +26,8 @@ const base = (() => {
     addComponent(e, 'draw')
     e.drawType = 'ball'
     e.radius = 5
+    e.draw_r = 0.5
+    e.draw_g = 0.5
 
     addComponent(e, 'event')
     e.cb = projectileDestroyCb
@@ -53,6 +55,9 @@ const base = (() => {
     const d = addComponent(e, 'draw')
     d.drawType = 'ball_s'
     d.radius = 10
+    d.draw_r = 0.8
+    d.draw_g = 0.8
+    d.draw_a = 0.2
 
     const d2 = addComponent(e, 'draw')
     d2.drawType = 'ball_s'
@@ -151,13 +156,14 @@ const base = (() => {
       addComponent(e, 'event')
       e.cb= (e, g, s) => {
         e.x = g.regions[e.region].width / 2
-        e.y = g.regions[e.region].height * 0.8 + 80
+        e.y = g.regions[e.region].height * 0.8 + 100
       }
 
       addComponent(e, 'draw')
       e.drawType = 'text'
       e.text = text2
       e.textFont = Math.floor(Math.min(60, g.regions[e.region].width / 15)) + 'px Arial'
+      e.draw_a = 0.4
 
       addComponent(e, 'resizeEvent')
 

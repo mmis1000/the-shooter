@@ -2,12 +2,16 @@ let draw_id = 1
 
 components.draw = (e) => {
   let data
+  let currentSize
 
   if (!e.draw_id) {
     data = e
+    currentSize = 0
   } else {
+    currentSize = 1
     while (e.draw_next !== null) {
       e = e.draw_next
+      currentSize++
     }
 
     data = {}
@@ -31,6 +35,13 @@ components.draw = (e) => {
   data.textFont = '60px Arial'
 
   data.draw_next = null
+
+  data.draw_r = 1
+  data.draw_g = 1
+  data.draw_b = 1
+  data.draw_a = 0.5
+
+  e.draw_size = currentSize + 1
 
   return data
 }
