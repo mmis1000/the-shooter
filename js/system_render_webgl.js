@@ -776,15 +776,18 @@ systems.push({
       const requests = {}
 
       for (let e of getByComponent('draw')) {
-        if (e.drawType === 'text' && e.region === region) {
-          requests[e.draw_id] = {
-            fillStyle: "rgba(255, 255, 255, 0.5)",
-            text: e.text,
-            textBaseline: "middle",
-            textAlign: "center",
-            font: e.textFont
+        let d = e
+        do {
+          if (d.drawType === 'text' && d.region === region) {
+            requests[d.draw_id] = {
+              fillStyle: "rgba(255, 255, 255, 0.5)",
+              text: e.text,
+              textBaseline: "middle",
+              textAlign: "center",
+              font: d.textFont
+            }
           }
-        }
+        } while (d = d.draw_next)
       }
 
       /**
@@ -800,192 +803,194 @@ systems.push({
 
       for (let e of getByComponent('draw')) {
         if (e.region === region) {
-          switch (e.drawType) {
-            case 'ball': {
-              const current = types.circle
-              const i = current.total++;
-              current.aVertexColor.set([
-                1, 1, 1, 0.5,
-                1, 1, 1, 0.5,
-                1, 1, 1, 0.5,
-                1, 1, 1, 0.5,
-              ], i * 4 * 4)
-              current.aVertexPosition.set([
-                e.x - e.radius, e.y - e.radius,
-                e.x + e.radius, e.y - e.radius,
-                e.x - e.radius, e.y + e.radius,
-                e.x + e.radius, e.y + e.radius,
-              ], i * 2 * 4)
-              current.aVertexType.set([
-                TYPE_CIRCLE,
-                TYPE_CIRCLE,
-                TYPE_CIRCLE,
-                TYPE_CIRCLE,
-              ], i * 1 * 4)
-              current.aVertexThreshold.set([
-                1, 0,
-                1, 0,
-                1, 0,
-                1, 0,
-              ], i * 2 * 4)
-              current.aVertexOffset.set([
-                -1, -1,
-                1, -1,
-                -1, 1,
-                1, 1,
-              ], i * 2 * 4)
-            } break;
-            case 'ball_s': {
-              const current = types.circle_hollow
-              const i = current.total++;
-              current.aVertexColor.set([
-                1, 1, 1, 0.5,
-                1, 1, 1, 0.5,
-                1, 1, 1, 0.5,
-                1, 1, 1, 0.5,
-              ], i * 4 * 4)
-              current.aVertexPosition.set([
-                e.x - e.radius, e.y - e.radius,
-                e.x + e.radius, e.y - e.radius,
-                e.x - e.radius, e.y + e.radius,
-                e.x + e.radius, e.y + e.radius,
-              ], i * 2 * 4)
-              current.aVertexType.set([
-                TYPE_HOLLOW_CIRCLE,
-                TYPE_HOLLOW_CIRCLE,
-                TYPE_HOLLOW_CIRCLE,
-                TYPE_HOLLOW_CIRCLE,
-              ], i * 1 * 4)
-              const percent = (e.radius - lineWidth) / e.radius;
-              current.aVertexThreshold.set([
-                1, percent,
-                1, percent,
-                1, percent,
-                1, percent,
-              ], i * 2 * 4)
-              current.aVertexOffset.set([
-                -1, -1,
-                1, -1,
-                -1, 1,
-                1, 1,
-              ], i * 2 * 4)
-            } break;
-            case 'block': {
-              const current = types.square
-              const i = current.total++;
-              current.aVertexColor.set([
-                1, 1, 1, 0.5,
-                1, 1, 1, 0.5,
-                1, 1, 1, 0.5,
-                1, 1, 1, 0.5,
-              ], i * 4 * 4)
-              current.aVertexPosition.set([
-                e.x + e.bx1, e.y + e.by1,
-                e.x + e.bx2, e.y + e.by1,
-                e.x + e.bx1, e.y + e.by2,
-                e.x + e.bx2, e.y + e.by2,
-              ], i * 2 * 4)
-              current.aVertexType.set([
-                TYPE_SQUARE,
-                TYPE_SQUARE,
-                TYPE_SQUARE,
-                TYPE_SQUARE,
-              ], i * 1 * 4)
-              current.aVertexThreshold.set([
-                0, 0,
-                0, 0,
-                0, 0,
-                0, 0,
-              ], i * 2 * 4)
-              current.aVertexOffset.set([
-                -1, -1,
-                1, -1,
-                -1, 1,
-                1, 1,
-              ], i * 2 * 4)
-            } break;
-            case 'block_s': {
-              const current = types.square_hollow
-              const i = current.total++;
-              const width = Math.abs(e.bx2 - e.bx1)
-              const height = Math.abs(e.by2 - e.by1)
+          let d = e
+          do {
+            switch (d.drawType) {
+              case 'ball': {
+                const current = types.circle
+                const i = current.total++;
+                current.aVertexColor.set([
+                  1, 1, 1, 0.5,
+                  1, 1, 1, 0.5,
+                  1, 1, 1, 0.5,
+                  1, 1, 1, 0.5,
+                ], i * 4 * 4)
+                current.aVertexPosition.set([
+                  e.x - d.radius, e.y - d.radius,
+                  e.x + d.radius, e.y - d.radius,
+                  e.x - d.radius, e.y + d.radius,
+                  e.x + d.radius, e.y + d.radius,
+                ], i * 2 * 4)
+                current.aVertexType.set([
+                  TYPE_CIRCLE,
+                  TYPE_CIRCLE,
+                  TYPE_CIRCLE,
+                  TYPE_CIRCLE,
+                ], i * 1 * 4)
+                current.aVertexThreshold.set([
+                  1, 0,
+                  1, 0,
+                  1, 0,
+                  1, 0,
+                ], i * 2 * 4)
+                current.aVertexOffset.set([
+                  -1, -1,
+                  1, -1,
+                  -1, 1,
+                  1, 1,
+                ], i * 2 * 4)
+              } break;
+              case 'ball_s': {
+                const current = types.circle_hollow
+                const i = current.total++;
+                current.aVertexColor.set([
+                  1, 1, 1, 0.5,
+                  1, 1, 1, 0.5,
+                  1, 1, 1, 0.5,
+                  1, 1, 1, 0.5,
+                ], i * 4 * 4)
+                current.aVertexPosition.set([
+                  e.x - d.radius, e.y - d.radius,
+                  e.x + d.radius, e.y - d.radius,
+                  e.x - d.radius, e.y + d.radius,
+                  e.x + d.radius, e.y + d.radius,
+                ], i * 2 * 4)
+                current.aVertexType.set([
+                  TYPE_HOLLOW_CIRCLE,
+                  TYPE_HOLLOW_CIRCLE,
+                  TYPE_HOLLOW_CIRCLE,
+                  TYPE_HOLLOW_CIRCLE,
+                ], i * 1 * 4)
+                const percent = (d.radius - lineWidth) / d.radius;
+                current.aVertexThreshold.set([
+                  1, percent,
+                  1, percent,
+                  1, percent,
+                  1, percent,
+                ], i * 2 * 4)
+                current.aVertexOffset.set([
+                  -1, -1,
+                  1, -1,
+                  -1, 1,
+                  1, 1,
+                ], i * 2 * 4)
+              } break;
+              case 'block': {
+                const current = types.square
+                const i = current.total++;
+                current.aVertexColor.set([
+                  1, 1, 1, 0.5,
+                  1, 1, 1, 0.5,
+                  1, 1, 1, 0.5,
+                  1, 1, 1, 0.5,
+                ], i * 4 * 4)
+                current.aVertexPosition.set([
+                  e.x + d.bx1, e.y + d.by1,
+                  e.x + d.bx2, e.y + d.by1,
+                  e.x + d.bx1, e.y + d.by2,
+                  e.x + d.bx2, e.y + d.by2,
+                ], i * 2 * 4)
+                current.aVertexType.set([
+                  TYPE_SQUARE,
+                  TYPE_SQUARE,
+                  TYPE_SQUARE,
+                  TYPE_SQUARE,
+                ], i * 1 * 4)
+                current.aVertexThreshold.set([
+                  0, 0,
+                  0, 0,
+                  0, 0,
+                  0, 0,
+                ], i * 2 * 4)
+                current.aVertexOffset.set([
+                  -1, -1,
+                  1, -1,
+                  -1, 1,
+                  1, 1,
+                ], i * 2 * 4)
+              } break;
+              case 'block_s': {
+                const current = types.square_hollow
+                const i = current.total++;
+                const width = Math.abs(d.bx2 - d.bx1)
+                const height = Math.abs(d.by2 - d.by1)
 
-              current.aVertexColor.set([
-                1, 1, 1, 0.5,
-                1, 1, 1, 0.5,
-                1, 1, 1, 0.5,
-                1, 1, 1, 0.5,
-              ], i * 4 * 4)
-              current.aVertexPosition.set([
-                e.x + e.bx1, e.y + e.by1,
-                e.x + e.bx2, e.y + e.by1,
-                e.x + e.bx1, e.y + e.by2,
-                e.x + e.bx2, e.y + e.by2,
-              ], i * 2 * 4)
-              current.aVertexType.set([
-                TYPE_HOLLOW_SQUARE,
-                TYPE_HOLLOW_SQUARE,
-                TYPE_HOLLOW_SQUARE,
-                TYPE_HOLLOW_SQUARE,
-              ], i * 1 * 4)
-              current.aVertexThreshold.set([
-                1 - lineWidth * 2 / width, 1 - lineWidth * 2 / height,
-                1 - lineWidth * 2 / width, 1 - lineWidth * 2 / height,
-                1 - lineWidth * 2 / width, 1 - lineWidth * 2 / height,
-                1 - lineWidth * 2 / width, 1 - lineWidth * 2 / height,
-              ], i * 2 * 4)
-              current.aVertexOffset.set([
-                -1, -1,
-                1, -1,
-                -1, 1,
-                1, 1,
-              ], i * 2 * 4)
-            } break;
-            case 'text': {
-              const current = types.image
-              const i = current.total++;
+                current.aVertexColor.set([
+                  1, 1, 1, 0.5,
+                  1, 1, 1, 0.5,
+                  1, 1, 1, 0.5,
+                  1, 1, 1, 0.5,
+                ], i * 4 * 4)
+                current.aVertexPosition.set([
+                  e.x + d.bx1, e.y + d.by1,
+                  e.x + d.bx2, e.y + d.by1,
+                  e.x + d.bx1, e.y + d.by2,
+                  e.x + d.bx2, e.y + d.by2,
+                ], i * 2 * 4)
+                current.aVertexType.set([
+                  TYPE_HOLLOW_SQUARE,
+                  TYPE_HOLLOW_SQUARE,
+                  TYPE_HOLLOW_SQUARE,
+                  TYPE_HOLLOW_SQUARE,
+                ], i * 1 * 4)
+                current.aVertexThreshold.set([
+                  1 - lineWidth * 2 / width, 1 - lineWidth * 2 / height,
+                  1 - lineWidth * 2 / width, 1 - lineWidth * 2 / height,
+                  1 - lineWidth * 2 / width, 1 - lineWidth * 2 / height,
+                  1 - lineWidth * 2 / width, 1 - lineWidth * 2 / height,
+                ], i * 2 * 4)
+                current.aVertexOffset.set([
+                  -1, -1,
+                  1, -1,
+                  -1, 1,
+                  1, 1,
+                ], i * 2 * 4)
+              } break;
+              case 'text': {
+                const current = types.image
+                const i = current.total++;
 
-              const textureData = res.positions[e.draw_id]
+                const textureData = res.positions[e.draw_id]
 
-              const width = textureData.width
-              const height = textureData.height
-              const x = e.x - textureData.xOrigin
-              const y = e.y - textureData.yOrigin
+                const width = textureData.width
+                const height = textureData.height
+                const x = e.x - textureData.xOrigin
+                const y = e.y - textureData.yOrigin
 
-
-              current.aVertexColor.set([
-                1, 1, 1, 0.5,
-                1, 1, 1, 0.5,
-                1, 1, 1, 0.5,
-                1, 1, 1, 0.5,
-              ], i * 4 * 4)
-              current.aVertexPosition.set([
-                x, y,
-                x + width, y,
-                x, y + height,
-                x + width, y + height,
-              ], i * 2 * 4)
-              current.aVertexType.set([
-                TYPE_IMG,
-                TYPE_IMG,
-                TYPE_IMG,
-                TYPE_IMG,
-              ], i * 1 * 4)
-              // not used
-              current.aVertexThreshold.set([
-                0, 0,
-                0, 0,
-                0, 0,
-                0, 0,
-              ], i * 2 * 4)
-              current.aVertexOffset.set([
-                textureData.x / res.width, textureData.y / res.height,
-                (textureData.x + textureData.width) / res.width, textureData.y / res.height,
-                textureData.x / res.width, (textureData.y + textureData.height) / res.height,
-                (textureData.x + textureData.width) / res.width, (textureData.y + textureData.height) / res.height,
-              ], i * 2 * 4)
-            } break;
-          }
+                current.aVertexColor.set([
+                  1, 1, 1, 0.5,
+                  1, 1, 1, 0.5,
+                  1, 1, 1, 0.5,
+                  1, 1, 1, 0.5,
+                ], i * 4 * 4)
+                current.aVertexPosition.set([
+                  x, y,
+                  x + width, y,
+                  x, y + height,
+                  x + width, y + height,
+                ], i * 2 * 4)
+                current.aVertexType.set([
+                  TYPE_IMG,
+                  TYPE_IMG,
+                  TYPE_IMG,
+                  TYPE_IMG,
+                ], i * 1 * 4)
+                // not used
+                current.aVertexThreshold.set([
+                  0, 0,
+                  0, 0,
+                  0, 0,
+                  0, 0,
+                ], i * 2 * 4)
+                current.aVertexOffset.set([
+                  textureData.x / res.width, textureData.y / res.height,
+                  (textureData.x + textureData.width) / res.width, textureData.y / res.height,
+                  textureData.x / res.width, (textureData.y + textureData.height) / res.height,
+                  (textureData.x + textureData.width) / res.width, (textureData.y + textureData.height) / res.height,
+                ], i * 2 * 4)
+              } break;
+            }
+          } while (d = d.draw_next)
         }
       }
 

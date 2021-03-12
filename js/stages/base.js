@@ -50,9 +50,13 @@ const base = (() => {
     e.x = g.regions['stage'].width / 2
     e.y = g.regions['stage'].height * 4 / 5
 
-    addComponent(e, 'draw')
-    e.drawType = 'ball_s'
-    e.radius = 10
+    const d = addComponent(e, 'draw')
+    d.drawType = 'ball_s'
+    d.radius = 10
+
+    const d2 = addComponent(e, 'draw')
+    d2.drawType = 'ball_s'
+    d2.radius = 5
 
 
     addComponent(e, 'collisionSource')

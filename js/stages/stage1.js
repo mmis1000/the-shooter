@@ -287,9 +287,16 @@ let stage1
     e.y = 0
     e.region = 'stage'
 
-    addComponent(e, 'draw')
-    e.drawType = 'ball_s'
-    e.radius = radius
+    const d = addComponent(e, 'draw')
+    d.drawType = 'ball_s'
+    d.radius = radius
+
+    const d1 = addComponent(e, 'draw')
+    d1.drawType = 'block_s'
+    d1.bx1 = -radius / 1.414
+    d1.bx2 = radius / 1.414
+    d1.by1 = -radius / 1.414
+    d1.by2 = radius / 1.414
 
     addComponent(e, 'collisionTarget')
     e.ct_zone = 'player'

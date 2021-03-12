@@ -30,9 +30,10 @@ function addEntity () {
 }
 
 function addComponent (e, name) {
-  components[name](e)
+  const res = components[name](e)
   componentLists.set(name, componentLists.get(name) || new Set())
   componentLists.get(name).add(e)
+  return res
 }
 
 function hasComponent (e, name) {
