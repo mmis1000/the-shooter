@@ -1,5 +1,23 @@
 /// <reference path="../index.js" />
 /// <reference path="./base.js" />
+
+const colors = [
+  { r: 1, g: 0, b: 0, a: 0.5 },
+  { r: 0.7, g: 0.7, b: 0, a: 0.5 },
+  { r: 0, g: 1, b: 0, a: 0.5 },
+  { r: 0, g: 0.7, b: 0.7, a: 0.5 },
+  { r: 0, g: 0, b: 1, a: 0.5 },
+  { r: 0.7, g: 0, b: 0.7, a: 0.5 },
+]
+
+let current = 0
+
+const nextColor = () => {
+  current = (current + 1) % colors.length
+
+  return colors[current]
+}
+
 let stage1
 {
   const nextLevelFn = (...args) => stage2(...args);
@@ -150,7 +168,7 @@ let stage1
     e.cRadius = bulletRadius
   }
   // Attacks player
-  const project2 = (x, y, arc, distance = 100, base = 100, bulletRadius = 10) =>{
+  const project2 = (x, y, arc, distance = 100, base = 100, bulletRadius = 10, color = { r: 1, g: 1, b: 1, a: 0.5}) =>{
     const acc = 0
 
     var vector = {
@@ -174,8 +192,10 @@ let stage1
     addComponent(e, 'draw')
     e.drawType = 'ball'
     e.radius = bulletRadius
-    e.draw_g = 0.5
-    e.draw_b = 0.5
+    e.draw_r = color.r
+    e.draw_g = color.g
+    e.draw_b = color.b
+    e.draw_a = color.a
 
     addComponent(e, 'event')
     e.cb = b.projectileDestroyCb
@@ -208,7 +228,8 @@ let stage1
           Math.PI / 2,
           0,
           100,
-          e._.bulletRadius
+          e._.bulletRadius,
+          e._.color
         )
       }
     }
@@ -230,7 +251,8 @@ let stage1
         Math.PI / 2 + Math.cos(Math.PI * e.age / e._.interval / 10) * Math.PI / 4,
         0,
         200,
-        e._.bulletRadius
+        e._.bulletRadius,
+        e._.color
       )
     }
   }
@@ -251,7 +273,8 @@ let stage1
         Math.PI / 2,
         0,
         200,
-        e._.bulletRadius
+        e._.bulletRadius,
+        e._.color
       )
     }
   }
@@ -283,6 +306,8 @@ let stage1
     }) => {
     const e = addEntity()
 
+    e._.color = nextColor()
+
     addComponent(e, 'pos')
     e.x = g.regions[e.region].width / 2 + x
     e.y = 0
@@ -298,8 +323,9 @@ let stage1
     d1.bx2 = radius / 1.414
     d1.by1 = -radius / 1.414
     d1.by2 = radius / 1.414
-    d1.draw_g = 0
-    d1.draw_b = 0
+    d1.draw_r = e._.color.r
+    d1.draw_g = e._.color.g
+    d1.draw_b = e._.color.b
     d1.draw_a = 1
 
     const d2 = addComponent(e, 'draw')
