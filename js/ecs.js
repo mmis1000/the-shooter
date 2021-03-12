@@ -68,7 +68,7 @@ const systems = [
 const tps = 60
 const diff = 1000 / tps
 let prev = Date.now()
-const minNext = 1000 / tps / 5
+const minNext = 4
 
 function tick () {
   const untilNext = Math.max((prev + diff) - Date.now(), minNext)
