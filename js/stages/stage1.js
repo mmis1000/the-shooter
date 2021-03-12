@@ -293,7 +293,8 @@ let stage1
     liveSpan = 60 * 10, // 10 seconds
     cb = straightBulletCb,
     bulletRadius = 5,
-    xCb = (e, g, s) => 0
+    xCb = (e, g, s) => 0,
+    color = { r: 1, g: 1, b: 1, a: 0.5}
   } = {
       x: 0,
       radius: 20,
@@ -302,11 +303,12 @@ let stage1
       liveSpan: 60 * 5,
       cb: straightBulletCb,
       bulletRadius: 5,
-      xCb: (e, g, s) => 0
+      xCb: (e, g, s) => 0,
+      color: { r: 1, g: 1, b: 1, a: 0.5}
     }) => {
     const e = addEntity()
 
-    e._.color = nextColor()
+    e._.color = color
 
     addComponent(e, 'pos')
     e.x = g.regions[e.region].width / 2 + x
@@ -494,7 +496,8 @@ let stage1
           cb: noBulletCb,
           hp: 4,
           interval: 20,
-          liveSpan: 180
+          liveSpan: 180,
+          color: nextColor()
         })
 
         spawnSmall({
@@ -505,7 +508,8 @@ let stage1
           cb: noBulletCb,
           hp: 4,
           interval: 20,
-          liveSpan: 180
+          liveSpan: 180,
+          color: nextColor()
         })
 
         spawnSmall({
@@ -516,7 +520,8 @@ let stage1
           cb: noBulletCb,
           hp: 4,
           interval: 20,
-          liveSpan: 180
+          liveSpan: 180,
+          color: nextColor()
         })
       }
     },
@@ -532,7 +537,8 @@ let stage1
           },
           hp: 2,
           cb: swappingBulletCb,
-          interval: 20
+          interval: 20,
+          color: nextColor()
         })
       }
     },
