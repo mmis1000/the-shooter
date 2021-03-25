@@ -350,6 +350,7 @@ let stage1
     e.health_zone = 'enemy'
     e.health = hp
     e.health_cb = (e, g, s) => {
+      g.audioService.playSound('hit')
       if (e.health <= 0) {
         destroy(e)
         g.score._.score += 100

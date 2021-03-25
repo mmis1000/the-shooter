@@ -93,6 +93,7 @@ const base = (() => {
     e._.interval = 20;
     e.cb = (e) => {
       if (e.age % e._.interval === 0) {
+        g.audioService.playSound('shoot')
         spawnPlayerBullet(e.x, e.y, 0, -500)
         spawnPlayerBullet(e.x, e.y, 100, -500)
         spawnPlayerBullet(e.x, e.y, -100, -500)
@@ -121,6 +122,7 @@ const base = (() => {
   }
 
   function spawnHomeScreen(text, text2, startHandler) {
+    g.audioService.playSoundLoop(null)
     exitTouchMouseMode(g);
 
     {
@@ -187,7 +189,10 @@ const base = (() => {
       e.clickBx2 = 100
       e.clickBy1 = -100
       e.clickBy2 = 100
-      e.clickCb = (e, g, s) => {
+      e.clickCb = async (e, g, s) => {
+        await g.audioService.resume()
+        g.audioService.playSoundLoop('battle-theme')
+
         const { x, y } = localToGlobal(
           g.regions['stage'].width / 2, g.regions['stage'].height * 4 / 5,
           g.regions['stage'].top, g.regions['stage'].left,
