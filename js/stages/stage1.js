@@ -354,6 +354,10 @@ let stage1
       if (e.health <= 0) {
         destroy(e)
         g.score._.score += 100
+
+        if (Math.random() < 0.2) {
+          base.spawnItem(e.x, e.y, 0, 100)
+        }
       }
     }
 

@@ -688,10 +688,10 @@ systems.push({
       for (let e of getByComponent('draw')) {
         let d = e
         do {
-          if (d.drawType === 'text' && d.region === region) {
+          if (d.drawType === 'text' && e.region === region) {
             requests[d.draw_id] = {
               fillStyle: `rgba(${d.draw_r * 255}, ${d.draw_g * 255}, ${d.draw_b * 255}, ${d.draw_a})`,
-              text: e.text,
+              text: d.text,
               textBaseline: "middle",
               textAlign: "center",
               font: d.textFont
@@ -860,7 +860,7 @@ systems.push({
                 const current = types.image
                 const i = current.total++;
 
-                const textureData = res.positions[e.draw_id]
+                const textureData = res.positions[d.draw_id]
 
                 const width = textureData.width
                 const height = textureData.height

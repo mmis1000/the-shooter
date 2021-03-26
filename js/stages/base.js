@@ -13,7 +13,6 @@ const base = (() => {
   }
 
   function spawnPlayerBullet(x, y, vx, vy) {
-    // spawner
     const e = addEntity()
     addComponent(e, 'pos')
     e.x = x
@@ -101,6 +100,69 @@ const base = (() => {
     }
   }
 
+  function spawnItem(x, y, vx, vy) {
+    const e = addEntity()
+    addComponent(e, 'pos')
+    e.x = x
+    e.y = y
+    e.region = 'stage'
+    addComponent(e, 'physic')
+    e.vx = vx
+    e.vy = vy
+
+    addComponent(e, 'draw')
+    e.drawType = 'ball'
+    e.radius = 10
+    e.draw_r = 1
+    e.draw_g = 0
+    e.draw_b = 0
+    e.draw_a = 0.2
+
+    const e1 = addComponent(e, 'draw')
+    e1.drawType = 'text'
+    e1.draw_r = 1
+    e1.draw_g = 1
+    e1.draw_b = 1
+    e1.draw_a = 1
+    e1.text = 'P'
+    e1.textFont = '20px Arial'
+
+    addComponent(e, 'event')
+    e.cb = (e, g, s) => {
+      if (e.ctCollided) {
+        e.ctHitOn._.interval = 5
+        g.player.cb = (e) => {
+          if (e.age % e._.interval === 0) {
+            g.audioService.playSound('shoot')
+            switch ((e.age / e._.interval) % 5) {
+              case 0:
+                spawnPlayerBullet(e.x, e.y, 0, -500)
+                break
+              case 1:
+                spawnPlayerBullet(e.x + 5, e.y, 50, -500)
+                break
+              case 2:
+                spawnPlayerBullet(e.x + 5, e.y, 100, -500)
+                break
+              case 3:
+                spawnPlayerBullet(e.x - 5, e.y, -100, -500)
+                break
+              case 4:
+                spawnPlayerBullet(e.x - 5, e.y, -50, -500)
+            }
+          }
+        }
+        destroy(e)
+      }
+      projectileDestroyCb(e, g, s)
+    }
+
+    addComponent(e, 'collisionTarget')
+    e.ct_zone = 'player'
+    e.cType = 'ball'
+    e.cRadius = 5
+  }
+
   function spawnScore(currentScore = 0) {
     const e = g.score = addEntity()
     e._.score = currentScore
@@ -109,7 +171,7 @@ const base = (() => {
     e.region = 'stage'
 
     addComponent(e, 'event')
-    e.cb= (e, g, s) => {
+    e.cb = (e, g, s) => {
       e.x = g.regions[e.region].width - 100
       e.y = 40
       e.text = String(e._.score)
@@ -132,7 +194,7 @@ const base = (() => {
       e.region = 'stage'
 
       addComponent(e, 'event')
-      e.cb= (e, g, s) => {
+      e.cb = (e, g, s) => {
         e.x = g.regions[e.region].width / 2
         e.y = g.regions[e.region].height * 0.8
       }
@@ -156,7 +218,7 @@ const base = (() => {
       e.region = 'stage'
 
       addComponent(e, 'event')
-      e.cb= (e, g, s) => {
+      e.cb = (e, g, s) => {
         e.x = g.regions[e.region].width / 2
         e.y = g.regions[e.region].height * 0.8 + 100
       }
@@ -216,6 +278,7 @@ const base = (() => {
 
   return {
     spawnPlayer,
+    spawnItem,
     spawnHomeScreen,
     spawnScore,
     projectileDestroyCb,
