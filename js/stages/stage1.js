@@ -499,7 +499,7 @@ let stage1
             return Math.cos(Math.PI * e.age / 90) * 75 - 200
           },
           cb: noBulletCb,
-          hp: 4,
+          hp: 3,
           interval: 20,
           liveSpan: 180,
           color: nextColor()
@@ -511,7 +511,7 @@ let stage1
             return 0
           },
           cb: noBulletCb,
-          hp: 4,
+          hp: 3,
           interval: 20,
           liveSpan: 180,
           color: nextColor()
@@ -523,7 +523,7 @@ let stage1
             return Math.cos(Math.PI * e.age / 90) * -75 + 200
           },
           cb: noBulletCb,
-          hp: 4,
+          hp: 3,
           interval: 20,
           liveSpan: 180,
           color: nextColor()

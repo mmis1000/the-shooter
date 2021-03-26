@@ -134,21 +134,23 @@ const base = (() => {
         g.player.cb = (e) => {
           if (e.age % e._.interval === 0) {
             g.audioService.playSound('shoot')
-            switch ((e.age / e._.interval) % 5) {
+            switch ((e.age / e._.interval) % 4) {
               case 0:
+                spawnPlayerBullet(e.x, e.y, 0, -500)
                 spawnPlayerBullet(e.x, e.y, 0, -500)
                 break
               case 1:
                 spawnPlayerBullet(e.x + 5, e.y, 50, -500)
+                spawnPlayerBullet(e.x - 5, e.y, -50, -500)
                 break
               case 2:
                 spawnPlayerBullet(e.x + 5, e.y, 100, -500)
-                break
-              case 3:
                 spawnPlayerBullet(e.x - 5, e.y, -100, -500)
                 break
-              case 4:
+              case 3:
+                spawnPlayerBullet(e.x + 5, e.y, 50, -500)
                 spawnPlayerBullet(e.x - 5, e.y, -50, -500)
+                break
             }
           }
         }
