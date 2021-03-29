@@ -4,7 +4,11 @@
 let textureAtlas = null
 let textureAtlasWidth = 0
 let textureAtlasHeight = 0
-let textureAtlasInfo = null
+let textureAtlasInfo = /** @type {
+  {
+    frames: Record<string, { frame: { x: number, y: number, w: number, h: number }}>
+  }
+} */(/** @type { unknown } */(null))
 
 /**
  * @type { (name: string, size: number) => Uint16Array }
@@ -289,6 +293,21 @@ function generateTexture(gl, texture, key, requests) {
   return res
 }
 
+/**
+ * @param {number} x
+ * @param {number} y
+ * @param {number} xOrigin
+ * @param {number} yOrigin
+ * @param {number} angle
+ */
+function rotate(x, y, xOrigin, yOrigin, angle) {
+  const xVector = x - xOrigin
+  const yVector = y - yOrigin
+  const newX = xOrigin + xVector * Math.cos(angle) + yVector * Math.sin(angle)
+  const newY = yOrigin - xVector * Math.sin(angle) + yVector * Math.cos(angle)
+  return [newX, newY]
+}
+
 const TYPE_SQUARE = 1
 const TYPE_HOLLOW_SQUARE = 2
 const TYPE_CIRCLE = 3
@@ -325,8 +344,8 @@ systems.push({
     textureAtlas = textureAtlas_
     textureAtlasInfo =textureAtlasInfo_
 
-    textureAtlasWidth = textureAtlas_.naturalWidth
-    textureAtlasHeight = textureAtlas_.naturalHeight
+    textureAtlasWidth = textureAtlasInfo_.meta.size.w
+    textureAtlasHeight = textureAtlasInfo_.meta.size.h
 
     gl.bindTexture(gl.TEXTURE_2D, g.programs.object_image.buffers.tImage);
     gl.texImage2D(gl.TEXTURE_2D, level, internalFormat, srcFormat, srcType, textureAtlas);
@@ -363,6 +382,8 @@ systems.push({
 
     g.canvas.width = g.windowWidth * g.dpi
     g.canvas.height = g.windowHeight * g.dpi
+
+    gl.getExtension('OES_standard_derivatives');
 
     gl.viewport(0, 0, g.canvas.width, g.canvas.height)
 
@@ -458,6 +479,8 @@ systems.push({
           }
         `,
         `
+          #extension GL_EXT_shader_texture_lod : enable
+          #extension GL_OES_standard_derivatives : enable
           precision mediump float;
 
           varying vec4 fColor;
@@ -522,7 +545,8 @@ systems.push({
     `)
 
     addProgram('image', `
-      gl_FragColor = texture2D(uSampler, fOffset);
+      vec4 color = texture2D(uSampler, fOffset);
+      gl_FragColor = color;
     `)
 
     window.addEventListener('resize', () => {
@@ -977,6 +1001,56 @@ systems.push({
                   (textureData.x + textureData.width) / res.width, (textureData.y + textureData.height) / res.height,
                 ], i * 2 * 4)
               } break;
+              case 'image': {
+                const current = types.image
+                const i = current.total++;
+
+                const textureData = textureAtlasInfo.frames[d.image].frame
+
+                const x = e.x
+                const y = e.y
+                const x1 = e.x + d.bx1
+                const y1 = e.y + d.by1
+                const x2 = e.x + d.bx2
+                const y2 = e.y + d.by2
+
+                current.aVertexColor.set([
+                  d.draw_r, d.draw_g, d.draw_b, d.draw_a,
+                  d.draw_r, d.draw_g, d.draw_b, d.draw_a,
+                  d.draw_r, d.draw_g, d.draw_b, d.draw_a,
+                  d.draw_r, d.draw_g, d.draw_b, d.draw_a,
+                ], i * 4 * 4)
+
+                current.aVertexPosition.set([
+                  ...rotate(x1, y1, x, y, d.draw_rotation),
+                  ...rotate(x2, y1, x, y, d.draw_rotation),
+                  ...rotate(x1, y2, x, y, d.draw_rotation),
+                  ...rotate(x2, y2, x, y, d.draw_rotation)
+                ], i * 2 * 4)
+                current.aVertexType.set([
+                  TYPE_IMG,
+                  TYPE_IMG,
+                  TYPE_IMG,
+                  TYPE_IMG,
+                ], i * 1 * 4)
+                // not used
+                current.aVertexThreshold.set([
+                  0, 0,
+                  0, 0,
+                  0, 0,
+                  0, 0,
+                ], i * 2 * 4)
+                current.aVertexOffset.set([
+                  textureData.x / textureAtlasWidth,
+                  textureData.y / textureAtlasHeight,
+                  (textureData.x + textureData.w) / textureAtlasWidth,
+                  textureData.y / textureAtlasHeight,
+                  textureData.x / textureAtlasWidth,
+                  (textureData.y + textureData.h) / textureAtlasHeight,
+                  (textureData.x + textureData.w) / textureAtlasWidth,
+                  (textureData.y + textureData.h) / textureAtlasHeight,
+                ], i * 2 * 4)
+              } break;
             }
           } while (d = d.draw_next)
         }
@@ -1087,12 +1161,16 @@ systems.push({
             new Uint16Array(eIndex.buffer, 0, total * 6), gl.STATIC_DRAW);
         }
 
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, current.buffers.tImage)
+
         {
           const vertexCount = total * 6;
           const type = gl.UNSIGNED_SHORT;
           const offset = 0;
           gl.drawElements(gl.TRIANGLES, vertexCount, type, offset);
         }
+
 
         gl.disable(gl.BLEND)
         gl.disable(gl.SCISSOR_TEST);

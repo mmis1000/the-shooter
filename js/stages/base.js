@@ -28,6 +28,15 @@ const base = (() => {
     e.draw_r = 0.5
     e.draw_g = 0.5
 
+    const d3 = addComponent(e, 'draw')
+    d3.drawType = 'image'
+    d3.image = 'assets/images/Bullets/P02.png'
+    d3.bx1 = -3
+    d3.by1 = -16
+    d3.bx2 = 3
+    d3.by2 = 16
+    d3.draw_rotation = Math.atan2(-vy, vx) - Math.PI / 2
+
     addComponent(e, 'event')
     e.cb = projectileDestroyCb
 
@@ -62,6 +71,15 @@ const base = (() => {
     d2.drawType = 'ball_s'
     d2.radius = 5
 
+
+    const d3 = addComponent(e, 'draw')
+    d3.drawType = 'image'
+    d3.image = 'assets/images/Ship_01_Player[PLAYER]/AnimIdle/ship01P0000.png'
+    d3.bx1 = -16
+    d3.by1 = -16
+    d3.bx2 = 16
+    d3.by2 = 16
+    d3.draw_rotation = Math.PI / 2
 
     addComponent(e, 'collisionSource')
     e.cs_zone = 'player'

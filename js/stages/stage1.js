@@ -197,6 +197,15 @@ let stage1
     e.draw_b = color.b
     e.draw_a = color.a
 
+    const d = addComponent(e, 'draw')
+    d.drawType = 'image'
+    d.image = 'assets/images/Bullets/P04.png'
+    d.bx1 = -6
+    d.by1 = -32
+    d.bx2 = 6
+    d.by2 = 32
+    d.draw_rotation = Math.atan2(-e.vy, e.vx) - Math.PI / 2
+
     addComponent(e, 'event')
     e.cb = b.projectileDestroyCb
 
@@ -333,6 +342,15 @@ let stage1
     const d2 = addComponent(e, 'draw')
     d2.drawType = 'ball_s'
     d2.radius = radius / 2
+
+    const d3 = addComponent(e, 'draw')
+    d3.drawType = 'image'
+    d3.image = 'assets/images/Ship_02_Player[PLAYER]/AnimIdle/ship02P0000.png'
+    d3.draw_rotation = Math.PI / 2 * 3
+    d3.bx1 = -32
+    d3.by1 = -32
+    d3.bx2 = 32
+    d3.by2 = 32
 
     addComponent(e, 'collisionTarget')
     e.ct_zone = 'player'

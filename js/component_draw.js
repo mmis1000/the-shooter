@@ -18,11 +18,11 @@ components.draw = (e) => {
     e.draw_next = data
   }
 
-  data.drawType = '' // 'ball' | 'block' | 'text' | 'image
+  data.drawType = '' // 'ball' | 'block' | 'text' | 'image'
   data.draw_id = draw_id++
   data.draw_rotation = 0 // in radius
 
-  // block
+  // block & image
   data.bx1 = 0
   data.bx2 = 0
   data.by1 = 0

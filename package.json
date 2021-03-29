@@ -5,12 +5,14 @@
   "main": "index.js",
   "scripts": {
     "start": "npx serve .",
+    "generate-texture": "spritesheet-js --fullpath --format json assets/images/*/*.png assets/images/*/*/*.png --name assets/images_merged/merged",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {},
   "devDependencies": {
-    "serve": "^11.3.2"
+    "serve": "^11.3.2",
+    "spritesheet-js": "^1.2.6"
   }
 }
