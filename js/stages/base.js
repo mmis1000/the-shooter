@@ -31,9 +31,9 @@ const base = (() => {
     const d3 = addComponent(e, 'draw')
     d3.drawType = 'image'
     d3.image = 'assets/images/Bullets/P02.png'
-    d3.bx1 = -3
+    d3.bx1 = -6
     d3.by1 = -16
-    d3.bx2 = 3
+    d3.bx2 = 6
     d3.by2 = 16
     d3.draw_rotation = Math.atan2(-vy, vx) - Math.PI / 2
 

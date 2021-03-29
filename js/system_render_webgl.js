@@ -1056,7 +1056,7 @@ systems.push({
         }
       }
 
-      for (let type of ['square', 'square_hollow', 'circle', 'circle_hollow', 'text', 'image']) {
+      for (let type of ['square', 'square_hollow', 'circle', 'circle_hollow', 'image', 'text']) {
         const total = types[type].total
         if (total === 0) {
           continue
