@@ -18,8 +18,9 @@ components.draw = (e) => {
     e.draw_next = data
   }
 
-  data.drawType = '' // 'ball' | 'block' | 'text'
+  data.drawType = '' // 'ball' | 'block' | 'text' | 'image
   data.draw_id = draw_id++
+  data.draw_rotation = 0 // in radius
 
   // block
   data.bx1 = 0
@@ -33,6 +34,9 @@ components.draw = (e) => {
   // text
   data.text = ''
   data.textFont = '60px Arial'
+
+  // image
+  data.image = ''
 
   data.draw_next = null
 

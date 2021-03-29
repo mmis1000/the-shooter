@@ -1,4 +1,11 @@
 // @ts-check
+
+/** @type {HTMLImageElement | null} */
+let textureAtlas = null
+let textureAtlasWidth = 0
+let textureAtlasHeight = 0
+let textureAtlasInfo = null
+
 /**
  * @type { (name: string, size: number) => Uint16Array }
  */
@@ -173,6 +180,24 @@ function generateTexture(gl, texture, key, requests) {
   let height = 0
   let width = 0
 
+  /**
+   * @param {TextureRequest} data
+   */
+  function getKey (data) {
+    return [
+      data.fillStyle,
+      data.font,
+      data.text,
+      data.textAlign,
+      data.textBaseline
+    ].join('\u0000')
+  }
+
+  /**
+   * @type { Map<string, StitchedTexturePart & { ids: string[], info: TextureRequest }> }
+   */
+  const ress = new Map()
+
   const dimensions = requestList.map(r => {
     const info = r[1]
     ctx.font = info.font
@@ -180,9 +205,18 @@ function generateTexture(gl, texture, key, requests) {
     ctx.textBaseline = info.textBaseline
     // @ts-ignore
     ctx.textAlign = info.textAlign
+
+    const key = getKey(info)
+
+    const prev = ress.get(key)
+    if (prev) {
+      prev.ids.push(r[0])
+      return prev
+    }
+
     const size = ctx.measureText(info.text)
     /**
-     * @type {StitchedTexturePart & { key: string, info: TextureRequest }}
+     * @type {StitchedTexturePart & { ids: string[], info: TextureRequest }}
      */
     const res = {
       x: 0,
@@ -191,9 +225,11 @@ function generateTexture(gl, texture, key, requests) {
       yOrigin: height + (0 - (-size.actualBoundingBoxAscent)),
       width: size.actualBoundingBoxRight - (-size.actualBoundingBoxLeft),
       height: size.actualBoundingBoxDescent - (-size.actualBoundingBoxAscent),
-      key: r[0],
+      ids: [r[0]],
       info
     }
+
+    ress.set(key, res)
 
     width = Math.max(width, res.width)
     height += size.actualBoundingBoxDescent - (-size.actualBoundingBoxAscent)
@@ -243,7 +279,9 @@ function generateTexture(gl, texture, key, requests) {
   }
 
   for (const d of dimensions) {
-    res.positions[d.key] = d
+    for (const id of d.ids) {
+      res.positions[id] = d
+    }
   }
 
   cachedTextures.set(key, res)
@@ -261,11 +299,47 @@ systems.push({
   name: 'render',
   dependsOn: ['regions'],
   /**
+   * @param {any} g
+   * @returns {Promise<void>}
+   */
+  async asyncInit(g) {
+    const gl = g.gl
+
+    const level = 0;
+    const internalFormat = gl.RGBA;
+    const srcFormat = gl.RGBA;
+    const srcType = gl.UNSIGNED_BYTE;
+
+    // load texture
+    const texturePromise = new Promise((resolve, reject) => {
+      const textureAtlas = document.createElement('img')
+      textureAtlas.addEventListener('load', () => resolve(textureAtlas))
+      textureAtlas.addEventListener('error', reject)
+      textureAtlas.src = 'assets/images_merged/merged.png'
+    })
+
+    const textureInfoPromise = fetch('assets/images_merged/merged.json').then(res => res.json())
+
+    const [textureAtlas_, textureAtlasInfo_] = await Promise.all([texturePromise, textureInfoPromise])
+
+    textureAtlas = textureAtlas_
+    textureAtlasInfo =textureAtlasInfo_
+
+    textureAtlasWidth = textureAtlas_.naturalWidth
+    textureAtlasHeight = textureAtlas_.naturalHeight
+
+    gl.bindTexture(gl.TEXTURE_2D, g.programs.object_image.buffers.tImage);
+    gl.texImage2D(gl.TEXTURE_2D, level, internalFormat, srcFormat, srcType, textureAtlas);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  },
+  /**
    *
    * @param {any} g
    * @returns
    */
-  init(g) {
+  async init(g) {
     // global resize callback
     g.resizeCb = nuzz
 
@@ -330,7 +404,6 @@ systems.push({
           }
         `
       )
-
 
       current.data = {
         aVertexPosition: gl.getAttribLocation(current.program, 'aVertexPosition'),
@@ -418,7 +491,7 @@ systems.push({
         aVertexType: gl.createBuffer(),
         aVertexThreshold: gl.createBuffer(),
         aVertexOffset: gl.createBuffer(),
-        tText: gl.createTexture()
+        tImage: gl.createTexture()
       }
     }
 
@@ -442,6 +515,10 @@ systems.push({
       gl_FragColor = length(fOffset) < fThreshold.x && length(fOffset) > fThreshold.y
         ? fColor
         : vec4(0.0, 0.0, 0.0, 0.0);
+    `)
+
+    addProgram('text', `
+      gl_FragColor = texture2D(uSampler, fOffset);
     `)
 
     addProgram('image', `
@@ -670,6 +747,7 @@ systems.push({
     initBuffer('circle_hollow')
     initBuffer('square')
     initBuffer('square_hollow')
+    initBuffer('text')
     initBuffer('image')
 
     for (const region in g.regions) {
@@ -706,7 +784,7 @@ systems.push({
       let res
 
       if (Object.keys(requests).length > 0) {
-        res = generateTexture(gl, g.programs.object_image.buffers.tText, region, requests)
+        res = generateTexture(gl, g.programs.object_text.buffers.tImage, region, requests)
       } else {
         res = /** @type {StitchedTexture} */(/** @type {unknown} */(null))
       }
@@ -857,7 +935,7 @@ systems.push({
                 ], i * 2 * 4)
               } break;
               case 'text': {
-                const current = types.image
+                const current = types.text
                 const i = current.total++;
 
                 const textureData = res.positions[d.draw_id]
@@ -904,7 +982,7 @@ systems.push({
         }
       }
 
-      for (let type of ['square', 'square_hollow', 'circle', 'circle_hollow', 'image']) {
+      for (let type of ['square', 'square_hollow', 'circle', 'circle_hollow', 'text', 'image']) {
         const total = types[type].total
         if (total === 0) {
           continue

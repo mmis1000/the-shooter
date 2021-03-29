@@ -99,17 +99,23 @@ function setup(setupCb = (g) => {}) {
 
 // boot
 
+const pendingJobs = []
+
 function init () {
   for (let sys of systems) {
     if (sys.init) {
-      sys.init(globals)
+      const res = sys.init(globals)
+    }
+    if (sys.asyncInit) {
+      pendingJobs.push(sys.asyncInit(globals))
     }
   }
 }
 
 // run
 
-function start () {
+async function start () {
+  await Promise.all(pendingJobs)
   prev = Date.now() - diff
   tick()
 }

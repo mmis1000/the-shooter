@@ -86,7 +86,7 @@ const base = (() => {
     }
 
     addComponent(e, 'trackCursor')
-    e.trackCursorMaxDistance = 100
+    e.trackCursorMaxDistance = 1000
 
     addComponent(e, 'event')
     e._.interval = 20;
