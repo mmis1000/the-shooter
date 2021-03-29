@@ -864,8 +864,8 @@ systems.push({
 
                 const width = textureData.width
                 const height = textureData.height
-                const x = e.x - textureData.xOrigin
-                const y = e.y - textureData.yOrigin
+                const x = e.x - (textureData.xOrigin - textureData.x)
+                const y = e.y - (textureData.yOrigin - textureData.y)
 
                 current.aVertexColor.set([
                   d.draw_r, d.draw_g, d.draw_b, d.draw_a,
