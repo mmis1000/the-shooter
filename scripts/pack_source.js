@@ -83,6 +83,8 @@ async function main() {
     bakedEntries.push({ ...dim, file, id: filename })
   }
 
+  bakedEntries.sort((i, j) => -i.height + j.height)
+
   const sprite = new ShelfPack(10, 10, { autoResize: true });
   sprite.pack(bakedEntries, { inPlace: true });
 

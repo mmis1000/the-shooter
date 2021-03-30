@@ -6,6 +6,7 @@ const fs = require('fs').promises
 const fg = require('fast-glob');
 const { Image, createCanvas } = require('canvas')
 const mkdirp = require('mkdirp')
+const overrides = require('../assets/image_sprites/overrides.json')
 
 const targetDir = 'assets/images/generated/'
 
@@ -39,8 +40,10 @@ async function process (entry) {
     img.src = file
   })
 
-  const spriteWidth = img.naturalWidth
-  const spriteHeight = img.naturalHeight
+  const override = overrides[entry.file]
+
+  const spriteWidth = override ? override[0] * entry.size[0] : img.naturalWidth
+  const spriteHeight = override ? override[1] * entry.size[1] : img.naturalHeight
 
   const canvas = createCanvas(...entry.size, 'png')
   const ctx = canvas.getContext('2d')
