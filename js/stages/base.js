@@ -30,7 +30,7 @@ const base = (() => {
 
     const d3 = addComponent(e, 'draw')
     d3.drawType = 'image_low'
-    d3.image = 'assets/images/Bullets/P02.png'
+    d3.image = 'Bullets/P02'
     d3.bx1 = -6
     d3.by1 = -16
     d3.bx2 = 6
@@ -74,7 +74,7 @@ const base = (() => {
 
     const d3 = addComponent(e, 'draw')
     d3.drawType = 'image'
-    d3.image = 'assets/images/Ship_01_Player[PLAYER]/AnimIdle/ship01P0000.png'
+    d3.image = 'ship01P0000'
     d3.bx1 = -16
     d3.by1 = -16
     d3.bx2 = 16

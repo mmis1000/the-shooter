@@ -1,15 +1,25 @@
 {
     "workbench.colorCustomizations": {
         "jsannotations.annotationForeground": "#555",
-        "activityBarBadge.background": "#0000",
-        "activityBarBadge.foreground": "#0000",
-        "activityBar.background": "#29301E",
-        "titleBar.activeBackground": "#39432A",
-        "titleBar.activeForeground": "#FBFCFA"
+        "activityBarBadge.background": "#476278",
+        "activityBarBadge.foreground": "#e7e7e7",
+        "activityBar.background": "#28311d",
+        "titleBar.activeBackground": "#0e110a",
+        "titleBar.activeForeground": "#e7e7e7",
+        "activityBar.activeBackground": "#28311d",
+        "activityBar.activeBorder": "#476278",
+        "activityBar.foreground": "#e7e7e7",
+        "activityBar.inactiveForeground": "#e7e7e799",
+        "statusBar.background": "#0e110a",
+        "statusBar.foreground": "#e7e7e7",
+        "statusBarItem.hoverBackground": "#28311d",
+        "titleBar.inactiveBackground": "#0e110a99",
+        "titleBar.inactiveForeground": "#e7e7e799"
     },
     "cSpell.words": [
         "mediump",
         "msaa",
         "nuzz"
-    ]
+    ],
+    "peacock.remoteColor": "#0e110a"
 }

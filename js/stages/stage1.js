@@ -203,7 +203,7 @@ let stage1
 
     const d = addComponent(e, 'draw')
     d.drawType = 'image_low'
-    d.image = 'assets/images/Bullets/P04.png'
+    d.image = 'Bullets/P04'
     d.bx1 = -6
     d.by1 = -32
     d.bx2 = 6
@@ -349,7 +349,7 @@ let stage1
 
     const d3 = addComponent(e, 'draw')
     d3.drawType = 'image'
-    d3.image = 'assets/images/Ship_02_Player[PLAYER]/AnimIdle/ship02P0000.png'
+    d3.image = 'ship02P0000'
     d3.draw_rotation = Math.PI / 2 * 3
     d3.bx1 = -32
     d3.by1 = -32
@@ -584,7 +584,7 @@ let stage1
   const decorations = {
     [0] (e, g, c) {
       base.spawnDecoration(
-        'assets/images/RandomBuildings/Platform[PLAYER]/P01.png',
+        'Platform[PLAYER]/P01',
         g.regions['stage'].width / 2,
         g.regions['stage'].height * 4 / 5,
         0, 50,
@@ -593,7 +593,7 @@ let stage1
         60
       )
       base.spawnDecoration(
-        'assets/images/MiniAsteroids/01.png',
+        'MiniAsteroids/01',
         g.regions['stage'].width / 3 * 2,
         g.regions['stage'].height / 2,
         0, 50,
@@ -602,7 +602,7 @@ let stage1
         60
       )
       base.spawnDecoration(
-        'assets/images/RandomBuildings/B01.png',
+        'RandomBuildings/B01',
         64,
         g.regions['stage'].height / 4,
         0, 50,
@@ -619,7 +619,7 @@ let stage1
     let current = index++
     decorations[time] = (e, g, c) => {
       base.spawnDecorationOnTop(
-        `assets/images/MiniAsteroids/0${current % 3 + 1}.png`,
+        `MiniAsteroids/0${current % 3 + 1}`,
         g.regions['stage'].width / 3 * (current * Math.PI % 2 + 1),
         0, 50,
         -256, -256, 256, 256,
@@ -629,7 +629,7 @@ let stage1
     }
     decorations[time + 60 * 2] = (e, g, c) => {
       base.spawnDecorationOnTop(
-        `assets/images/RandomBuildings/B${(current % 26 + 1).toString().padStart(2, '0')}.png`,
+        `RandomBuildings/B${(current % 26 + 1).toString().padStart(2, '0')}`,
         g.regions['stage'].width / 3 * (current * Math.PI % 2 + 1),
         0, 50,
         -64, -64, 64, 64,

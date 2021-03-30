@@ -5,14 +5,20 @@
   "main": "index.js",
   "scripts": {
     "start": "npx serve .",
-    "generate-texture": "spritesheet-js --fullpath --format json assets/images/*/*.png assets/images/*/*/*.png --name assets/images_merged/merged",
+    "generate-texture-source": "node scripts/gen_source.js",
+    "generate-texture": "node scripts/pack_source.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {},
   "devDependencies": {
-    "serve": "^11.3.2",
-    "spritesheet-js": "^1.2.6"
+    "@mapbox/shelf-pack": "^3.2.0",
+    "@types/node": "^14.14.37",
+    "canvas": "^2.7.0",
+    "fast-glob": "^3.2.5",
+    "image-size": "^0.9.7",
+    "mkdirp": "^1.0.4",
+    "serve": "^11.3.2"
   }
 }
