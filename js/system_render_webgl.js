@@ -352,6 +352,18 @@ systems.push({
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+
+    gl.bindTexture(gl.TEXTURE_2D, g.programs.object_image_low.buffers.tImage);
+    gl.texImage2D(gl.TEXTURE_2D, level, internalFormat, srcFormat, srcType, textureAtlas);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+
+    gl.bindTexture(gl.TEXTURE_2D, g.programs.object_image_bg.buffers.tImage);
+    gl.texImage2D(gl.TEXTURE_2D, level, internalFormat, srcFormat, srcType, textureAtlas);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
   },
   /**
    *
@@ -548,6 +560,17 @@ systems.push({
       vec4 color = texture2D(uSampler, fOffset);
       gl_FragColor = color;
     `)
+
+    addProgram('image_low', `
+      vec4 color = texture2D(uSampler, fOffset);
+      gl_FragColor = color;
+    `)
+
+    addProgram('image_bg', `
+      vec4 color = texture2D(uSampler, fOffset);
+      gl_FragColor = color;
+    `)
+
 
     window.addEventListener('resize', () => {
       g.dpi = (window.devicePixelRatio || 1) * msaa
@@ -773,6 +796,8 @@ systems.push({
     initBuffer('square_hollow')
     initBuffer('text')
     initBuffer('image')
+    initBuffer('image_low')
+    initBuffer('image_bg')
 
     for (const region in g.regions) {
       /**
@@ -1001,8 +1026,10 @@ systems.push({
                   (textureData.x + textureData.width) / res.width, (textureData.y + textureData.height) / res.height,
                 ], i * 2 * 4)
               } break;
+              case 'image_bg':
+              case 'image_low':
               case 'image': {
-                const current = types.image
+                const current = types[d.drawType]
                 const i = current.total++;
 
                 const textureData = textureAtlasInfo.frames[d.image].frame
@@ -1056,7 +1083,7 @@ systems.push({
         }
       }
 
-      for (let type of ['square', 'square_hollow', 'circle', 'circle_hollow', 'image', 'text']) {
+      for (let type of ['image_bg', 'image_low', 'square', 'square_hollow', 'circle', 'circle_hollow', 'image', 'text']) {
         const total = types[type].total
         if (total === 0) {
           continue

@@ -38,9 +38,13 @@ let stage1
           e._.currentCb = actions[time]
         }
         e._.currentCb(e, g, s)
+
+        if (decorations[time]) {
+          decorations[time](e, g, s)
+        }
       }
 
-      e._.currentCb = actions[0]
+      e._.currentCb = () => {}
     }
     spawnDirector()
   }
@@ -198,7 +202,7 @@ let stage1
     e.draw_a = color.a
 
     const d = addComponent(e, 'draw')
-    d.drawType = 'image'
+    d.drawType = 'image_low'
     d.image = 'assets/images/Bullets/P04.png'
     d.bx1 = -6
     d.by1 = -32
@@ -486,11 +490,11 @@ let stage1
   }
 
   const actions = {
-    [0] (e, g, s) {
+    [60 * 5] (e, g, s) {
       const time = e.age
 
       // every .5 second
-      if (time % 60 === 0) {
+      if (time % 120 === 0) {
         spawnSmall({
           x: 0,
           xCb(e, g, s) {
@@ -500,6 +504,9 @@ let stage1
           hp: 3,
           interval: 20
         })
+      }
+
+      if (time % 120 === 60) {
         spawnSmall({
           x: 0,
           xCb(e, g, s) {
@@ -549,7 +556,7 @@ let stage1
         })
       }
     },
-    [60 * 10] (e, g, s) {
+    [60 * 15] (e, g, s) {
       const time = e.age
 
       if (time % 30 === 0) {
@@ -566,11 +573,69 @@ let stage1
         })
       }
     },
-    [60 * 20] (e, g, s) {},
-    [60 * 25] (e, g, s) {
+    [60 * 25] (e, g, s) {},
+    [60 * 40] (e, g, s) {
       spawnBoss()
       spawnHealthBar()
     },
-    [60 * 25 + 1] (e, g, s) {}
+    [60 * 40 + 1] (e, g, s) {}
+  }
+
+  const decorations = {
+    [0] (e, g, c) {
+      base.spawnDecoration(
+        'assets/images/RandomBuildings/Platform[PLAYER]/P01.png',
+        g.regions['stage'].width / 2,
+        g.regions['stage'].height * 4 / 5,
+        0, 50,
+        -64, -64, 64, 64,
+        0,
+        60
+      )
+      base.spawnDecoration(
+        'assets/images/MiniAsteroids/01.png',
+        g.regions['stage'].width / 3 * 2,
+        g.regions['stage'].height / 2,
+        0, 50,
+        -256, -256, 256, 256,
+        0,
+        60
+      )
+      base.spawnDecoration(
+        'assets/images/RandomBuildings/B01.png',
+        64,
+        g.regions['stage'].height / 4,
+        0, 50,
+        -64, -64, 64, 64,
+        0,
+        60
+      )
+    }
+  }
+
+  let index = 0
+
+  for (let time = 60 * 2; time < 60 * 25; time += 60 * 8) {
+    let current = index++
+    decorations[time] = (e, g, c) => {
+      base.spawnDecorationOnTop(
+        `assets/images/MiniAsteroids/0${current % 3 + 1}.png`,
+        g.regions['stage'].width / 3 * (current * Math.PI % 2 + 1),
+        0, 50,
+        -256, -256, 256, 256,
+        0,
+        60
+      )
+    }
+    decorations[time + 60 * 2] = (e, g, c) => {
+      base.spawnDecorationOnTop(
+        `assets/images/RandomBuildings/B${(current % 26 + 1).toString().padStart(2, '0')}.png`,
+        g.regions['stage'].width / 3 * (current * Math.PI % 2 + 1),
+        0, 50,
+        -64, -64, 64, 64,
+        0,
+        60
+      )
+    }
   }
 }

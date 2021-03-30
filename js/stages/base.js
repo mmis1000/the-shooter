@@ -29,7 +29,7 @@ const base = (() => {
     e.draw_g = 0.5
 
     const d3 = addComponent(e, 'draw')
-    d3.drawType = 'image'
+    d3.drawType = 'image_low'
     d3.image = 'assets/images/Bullets/P02.png'
     d3.bx1 = -6
     d3.by1 = -16
@@ -183,6 +183,90 @@ const base = (() => {
     e.cRadius = 5
   }
 
+  const spawnDecoration = (
+    image = '',
+    x = 0,
+    y = 0,
+    vx = 0,
+    vy = 0,
+    bx1 = 0,
+    by1 = 0,
+    bx2 = 0,
+    by2 = 0,
+    rotation = 0,
+    delay = 0
+  ) => {
+    const e = addEntity()
+
+    addComponent(e, 'pos')
+    e.x = x
+    e.y = y
+    e.region = 'stage'
+
+    addComponent(e, 'physic')
+    if (delay > 0) {
+      e.vx = 0
+      e.vy = 0
+    } else {
+      e.vx = vx
+      e.vy = vy
+    }
+
+    const d = addComponent(e, 'draw')
+    d.drawType = 'image_bg'
+    d.image = image
+    d.draw_rotation = rotation
+    d.bx1 = bx1
+    d.by1 = by1
+    d.bx2 = bx2
+    d.by2 = by2
+
+    addComponent(e, 'event')
+
+    e.cb = (e, g, s) => {
+      if (delay > 0 && e.age === delay) {
+        e.vx = vx
+        e.vy = vy
+      }
+
+      if (
+        e.x + e.bx2 < 0 ||
+        e.x + e.bx1 > g.regions['stage'].width ||
+        e.y + e.by2 < 0 ||
+        e.y + e.by1 > g.regions['stage'].height
+      ) {
+        destroy(e)
+      }
+    }
+  }
+
+  const spawnDecorationOnTop = (
+    image = '',
+    x = 0,
+    vx = 0,
+    vy = 0,
+    bx1 = 0,
+    by1 = 0,
+    bx2 = 0,
+    by2 = 0,
+    rotation = 0,
+    delay = 0
+  ) => {
+    spawnDecoration(
+      image,
+      x,
+      -by2 + 1,
+      vx,
+      vy,
+      bx1,
+      by1,
+      bx2,
+      by2,
+      rotation,
+      delay
+    )
+  }
+
   function spawnScore(currentScore = 0) {
     const e = g.score = addEntity()
     e._.score = currentScore
@@ -301,6 +385,8 @@ const base = (() => {
     spawnItem,
     spawnHomeScreen,
     spawnScore,
+    spawnDecoration,
+    spawnDecorationOnTop,
     projectileDestroyCb,
     clear
   }
