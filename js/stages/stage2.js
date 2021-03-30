@@ -371,6 +371,7 @@ let stage2
 
         const timer = addEntity()
         addComponent(timer, 'event')
+        timer.region = 'stage'
         timer.cb = (e, g, s) => {
           if (e.age > 180) {
             destroy(timer)
