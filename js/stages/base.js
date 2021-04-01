@@ -3,6 +3,10 @@
 const base = (() => {
   const g = globals;
 
+  const playerShip = getSprite(
+    seq(1, 8, 4).map(str => ['ship01P' + str, 8, 0])
+  )
+
   function projectileDestroyCb(e, g, s) {
     if (e.x < 0 || e.y < 0 || e.x > g.regions[e.region].width || e.y > g.regions[e.region].height) {
       destroy(e)
@@ -74,7 +78,7 @@ const base = (() => {
 
     const d3 = addComponent(e, 'draw')
     d3.drawType = 'image'
-    d3.image = 'ship01P0000'
+    d3.image = playerShip
     d3.bx1 = -16
     d3.by1 = -16
     d3.bx2 = 16
@@ -380,7 +384,46 @@ const base = (() => {
     g.cb = nuzz
   }
 
+
+  /**
+   * bake the image and length to full sprite
+   * @param {[str: string, length: number, rotation: 0 | 1 | 2 | 3][]} items
+   */
+  function getSprite (items) {
+    /**
+     * @type {[string, 0 | 1 | 2 | 3][]}
+     */
+    const res = []
+
+    for (const [src, length, rotation] of items) {
+      for (let i = 0; i < length; i++) {
+        res[res.length++] = [src, rotation]
+      }
+    }
+
+    return res
+  }
+
+  /**
+   * @param {number} from
+   * @param {number} to
+   * @param {number} pad
+   * @returns
+   */
+  function  seq (from, to, pad) {
+    const res = []
+
+    for (let i = from; i <= to; i++) {
+      res.push(i.toString().padStart(pad, '0'))
+    }
+
+    return res
+  }
+
+
   return {
+    seq,
+    getSprite,
     spawnPlayer,
     spawnItem,
     spawnHomeScreen,

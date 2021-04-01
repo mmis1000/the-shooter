@@ -1032,7 +1032,56 @@ systems.push({
                 const current = types[d.drawType]
                 const i = current.total++;
 
-                const textureData = textureAtlasInfo.frames[d.image].frame
+                const indexs = [
+                  0, 1,
+                  2, 3,
+                  6, 7,
+                  4, 5,
+
+                  8, 9,
+                  10, 11,
+                  12, 13
+                ]
+
+                /**
+                 * @param {T[]} arr
+                 * @param {number} offset
+                 * @template T
+                 * @returns {T[]}
+                 */
+                function rotationInPlace (arr, offset) {
+                  offset = ((offset % arr.length) + arr.length) % arr.length
+                  if (offset === 0) {
+                    return arr
+                  }
+
+                  const length = arr.length
+
+                  for (let i = length + offset - 1; i >= offset; i--) {
+                    arr[indexs[i]] = arr[indexs[i - offset]]
+                  }
+
+                  for (let i = offset - 1; i >= 0; i--) {
+                    arr[indexs[i]] = arr[indexs[i + length]]
+                  }
+
+                  arr.length = length
+
+                  return arr
+                }
+
+                let baseRotation = 0
+                let textureData
+
+                const image = d.image
+
+                if (Array.isArray(image)) {
+                  const frame = image[e.age % image.length]
+                  textureData = textureAtlasInfo.frames[frame[0]].frame
+                  baseRotation = frame[1]
+                } else {
+                  textureData =  textureAtlasInfo.frames[image].frame
+                }
 
                 const x = e.x
                 const y = e.y
@@ -1067,7 +1116,7 @@ systems.push({
                   0, 0,
                   0, 0,
                 ], i * 2 * 4)
-                current.aVertexOffset.set([
+                current.aVertexOffset.set(rotationInPlace([
                   textureData.x / textureAtlasWidth,
                   textureData.y / textureAtlasHeight,
                   (textureData.x + textureData.w) / textureAtlasWidth,
@@ -1076,7 +1125,7 @@ systems.push({
                   (textureData.y + textureData.h) / textureAtlasHeight,
                   (textureData.x + textureData.w) / textureAtlasWidth,
                   (textureData.y + textureData.h) / textureAtlasHeight,
-                ], i * 2 * 4)
+                ], -baseRotation * 2), i * 2 * 4)
               } break;
             }
           } while (d = d.draw_next)

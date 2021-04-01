@@ -1,6 +1,23 @@
 /// <reference path="../index.js" />
 /// <reference path="./base.js" />
 
+const iceBullet = base.getSprite(
+  base.seq(1, 54, 3).map(str => ['Iceball/' + str, 2, 3])
+)
+
+const fireBullet = base.getSprite(
+  base.seq(1, 60, 3).map(str => ['Fireball/' + str, 2, 3])
+)
+
+const enemyShip = base.getSprite(
+  base.seq(1, 8, 4).map(str => ['ship02P' + str, 6, 0])
+)
+
+const smallFireBullet = base.getSprite(
+  base.seq(1, 60, 3).map(str => ['Small_Fireball/' + str, 4, 2])
+)
+
+
 const colors = [
   { r: 1, g: 0, b: 0, a: 0.5 },
   { r: 0.7, g: 0.7, b: 0, a: 0.5 },
@@ -144,8 +161,8 @@ let stage1
     const e = addEntity()
 
     addComponent(e, 'pos')
-    e.x = x + vector.x * distance
-    e.y = y + vector.y * distance
+    e.x = x + vector.x * (distance + bulletRadius * 5)
+    e.y = y + vector.y * (distance + bulletRadius * 5)
     e.region = 'stage'
     addComponent(e, 'physic')
     e.vx = vector.x * base
@@ -158,6 +175,15 @@ let stage1
     e.radius = bulletRadius
     e.draw_g = 0.5
     e.draw_a = 0.7
+
+    const d = addComponent(e, 'draw')
+    d.drawType = 'image_low'
+    d.image = smallFireBullet
+    d.bx1 = -bulletRadius * 1.1
+    d.by1 = -bulletRadius * 1.1
+    d.bx2 = bulletRadius * 1.1
+    d.by2 = bulletRadius * 1.1 * 5
+    d.draw_rotation = Math.atan2(-e.vy, e.vx) - Math.PI / 2
 
     addComponent(e, 'event')
     e.cb = b.projectileDestroyCb
@@ -172,7 +198,12 @@ let stage1
     e.cRadius = bulletRadius
   }
   // Attacks player
-  const project2 = (x, y, arc, distance = 100, base = 100, bulletRadius = 10, color = { r: 1, g: 1, b: 1, a: 0.5}) =>{
+  const project2 = (
+    x, y, arc, distance = 100, base = 100,
+    bulletRadius = 10,
+    color = { r: 1, g: 1, b: 1, a: 0.5},
+    src = 'Bullets/P04'
+  ) =>{
     const acc = 0
 
     var vector = {
@@ -183,8 +214,8 @@ let stage1
     const e = addEntity()
 
     addComponent(e, 'pos')
-    e.x = x + vector.x * distance
-    e.y = y + vector.y * distance
+    e.x = x + vector.x * (distance + 52)
+    e.y = y + vector.y * (distance + 52)
     e.region = 'stage'
 
     addComponent(e, 'physic')
@@ -203,11 +234,11 @@ let stage1
 
     const d = addComponent(e, 'draw')
     d.drawType = 'image_low'
-    d.image = 'Bullets/P04'
+    d.image = src
     d.bx1 = -6
-    d.by1 = -32
+    d.by1 = -6
     d.bx2 = 6
-    d.by2 = 32
+    d.by2 = 6 + 52
     d.draw_rotation = Math.atan2(-e.vy, e.vx) - Math.PI / 2
 
     addComponent(e, 'event')
@@ -242,7 +273,8 @@ let stage1
           0,
           100,
           e._.bulletRadius,
-          e._.color
+          e._.color,
+          e._.bullet
         )
       }
     }
@@ -265,7 +297,8 @@ let stage1
         0,
         200,
         e._.bulletRadius,
-        e._.color
+        e._.color,
+        e._.bullet
       )
     }
   }
@@ -287,7 +320,8 @@ let stage1
         0,
         200,
         e._.bulletRadius,
-        e._.color
+        e._.color,
+        e._.bullet
       )
     }
   }
@@ -307,7 +341,8 @@ let stage1
     cb = straightBulletCb,
     bulletRadius = 5,
     xCb = (e, g, s) => 0,
-    color = { r: 1, g: 1, b: 1, a: 0.5}
+    color = { r: 1, g: 1, b: 1, a: 0.5},
+    bullet = undefined
   } = {
       x: 0,
       radius: 20,
@@ -317,11 +352,13 @@ let stage1
       cb: straightBulletCb,
       bulletRadius: 5,
       xCb: (e, g, s) => 0,
-      color: { r: 1, g: 1, b: 1, a: 0.5}
+      color: { r: 1, g: 1, b: 1, a: 0.5},
+      bullet: undefined
     }) => {
     const e = addEntity()
 
     e._.color = color
+    e._.bullet = bullet
 
     addComponent(e, 'pos')
     e.x = g.regions[e.region].width / 2 + x
@@ -349,7 +386,7 @@ let stage1
 
     const d3 = addComponent(e, 'draw')
     d3.drawType = 'image'
-    d3.image = 'ship02P0000'
+    d3.image = enemyShip
     d3.draw_rotation = Math.PI / 2 * 3
     d3.bx1 = -32
     d3.by1 = -32
@@ -410,6 +447,26 @@ let stage1
     e.draw_r = 0
     e.draw_b = 0
     e.draw_a = 0.9
+
+    {
+      const d = addComponent(e, 'draw')
+      d.drawType = 'image'
+      d.image = 'RandomBuildings/B10'
+      d.bx1 = -100
+      d.by1 = -100
+      d.bx2 = 100
+      d.by2 = 100
+    }
+
+    {
+      const d = addComponent(e, 'draw')
+      d.drawType = 'image'
+      d.image = 'RandomBuildings/B22'
+      d.bx1 = -70
+      d.by1 = -70
+      d.bx2 = 70
+      d.by2 = 70
+    }
 
     addComponent(e, 'collisionTarget')
     e.ct_zone = 'player'
@@ -502,7 +559,8 @@ let stage1
           },
           cb: swingBulletCb,
           hp: 3,
-          interval: 20
+          interval: 20,
+          bullet: iceBullet
         })
       }
 
@@ -514,7 +572,8 @@ let stage1
           },
           cb: swingBulletCb,
           hp: 3,
-          interval: 20
+          interval: 20,
+          bullet: fireBullet
         })
       }
 
