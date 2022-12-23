@@ -1,0 +1,9 @@
+{
+  "simple_patterns": [
+    "^B\\d+$",
+    "^P\\d+$",
+    "^\\d+$",
+    "^TG79Open\\d+$"
+  ],
+  "ignores_dupe": []
+}
