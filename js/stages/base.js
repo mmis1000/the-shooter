@@ -294,6 +294,7 @@ const base = (() => {
   }
 
   function spawnHomeScreen(text, text2, startHandler) {
+    document.getElementById('canvas').style.touchAction = 'auto'
     g.audioService.playSoundLoop(null)
     exitTouchMouseMode(g);
 
@@ -431,6 +432,7 @@ const base = (() => {
           y
         )
         clear()
+        document.getElementById('canvas').style.touchAction = 'none'
         startHandler()
       }
     }
