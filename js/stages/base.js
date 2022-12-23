@@ -298,6 +298,54 @@ const base = (() => {
     exitTouchMouseMode(g);
 
     {
+      //title
+      const e = g.homeScreenText = addEntity()
+      addComponent(e, 'pos')
+      e.region = 'stage'
+
+      addComponent(e, 'event')
+      e.cb = (e, g, s) => {
+        e.x = g.regions[e.region].width / 2
+        e.y = g.regions[e.region].height * 0.2
+      }
+
+      addComponent(e, 'draw')
+      e.drawType = 'text'
+      e.text = 'The Shooter'
+      e.textFont = Math.floor(Math.min(60, g.regions[e.region].width / 12)) + 'px Arial'
+
+      addComponent(e, 'resizeEvent')
+
+      e.resizeCb = (e, g) => {
+        e.textFont = Math.floor(Math.min(60, g.regions[e.region].width / 12)) + 'px Arial'
+      }
+    }
+
+    {
+      //title
+      const e = g.homeScreenText = addEntity()
+      addComponent(e, 'pos')
+      e.region = 'stage'
+
+      addComponent(e, 'event')
+      e.cb = (e, g, s) => {
+        e.x = g.regions[e.region].width / 2
+        e.y = g.regions[e.region].height * 0.3
+      }
+
+      addComponent(e, 'draw')
+      e.drawType = 'text'
+      e.text = 'A simple webgl game'
+      e.textFont = Math.floor(Math.min(60, g.regions[e.region].width / 13)) + 'px Arial'
+
+      addComponent(e, 'resizeEvent')
+
+      e.resizeCb = (e, g) => {
+        e.textFont = Math.floor(Math.min(60, g.regions[e.region].width / 12)) + 'px Arial'
+      }
+    }
+
+    {
       //text
       const e = g.homeScreenText = addEntity()
       addComponent(e, 'pos')
