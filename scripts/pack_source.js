@@ -63,7 +63,7 @@ async function main() {
     let filename = path.basename(file, '.png')
 
     if (isSimpleName(filename)) {
-      const segments = file.split(path.sep)
+      const segments = file.split('/')
       filename = segments[segments.length - 2] + '/' + filename
     }
 
