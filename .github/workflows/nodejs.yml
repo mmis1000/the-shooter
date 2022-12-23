@@ -15,14 +15,12 @@ jobs:
           npm ci
           npm run generate-texture-source
           npm run generate-texture
-          grep -v "assets/" .gitignore > .gitignore.tmp
-          rm .gitignore
-          mv .gitignore.tmp .gitignore
+          npm run make-dist
       # Deploy to local repo
       - name: Deploy
         uses: s0/git-publish-subdir-action@develop
         env:
           REPO: self
           BRANCH: gh-pages
-          FOLDER: ./
+          FOLDER: dist
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
