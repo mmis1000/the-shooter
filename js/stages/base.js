@@ -3,6 +3,8 @@
 const base = (() => {
   const g = globals;
 
+  g.soundPrompted = false
+
   const playerShip = getSprite(
     seq(1, 8, 4).map(str => ['ship01P' + str, 8, 0])
   )
@@ -360,7 +362,14 @@ const base = (() => {
       e.clickBy1 = -100
       e.clickBy2 = 100
       e.clickCb = async (e, g, s) => {
-        await g.audioService.resume()
+        if (!g.soundPrompted) {
+          const allow = confirm('Allow audio play?')
+          if (allow) {
+            await g.audioService.resume()
+          }
+
+          g.soundPrompted = true
+        }
         g.audioService.playSoundLoop('battle-theme')
 
         const { x, y } = localToGlobal(
